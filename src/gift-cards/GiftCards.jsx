@@ -146,14 +146,14 @@ function Hero() {
             Mybitstore Gift Cards
           </span>
           <h1 className={cx('mt-[22px] max-w-[620px] text-[68px] font-semibold leading-[1.02] tracking-[-3.4px] max-lg:text-[56px] max-sm:text-[42px] max-sm:tracking-[-1.8px]', heroIn)} style={{ animationDelay: '0.08s' }}>
-            Spend crypto where you <span className="text-tab-active">already shop.</span>
+            Buy Gift Cards. Simple, Fast,  <span className="text-tab-active">Secure.</span>
           </h1>
           <p className={cx('mt-5 max-w-[540px] font-nunito text-[21px] leading-[1.45] text-gc-muted dark:text-[#c2c4cc] max-sm:text-lg', heroIn)} style={{ animationDelay: '0.16s' }}>
             Find a popular brand, pay with crypto or a payment account, and receive your gift card by email.
           </p>
           <div className={cx('mt-[34px] flex items-center gap-[17px] max-sm:flex-wrap', heroIn)} style={{ animationDelay: '0.24s' }}>
             <a className={btn.heroPrimary} href={links.trade}>
-              Buy a gift card
+              Buy Gift Cards
               <img src={arrowRight} alt="" width="22" height="22" className={btnArrow} />
             </a>
             <DownloadButton />
@@ -612,7 +612,7 @@ function Cta() {
                 href={links.trade}
                 className="group/btn inline-flex h-[60px] items-center justify-center gap-2.5 whitespace-nowrap rounded-lg border border-transparent bg-white px-4 font-euclid text-lg font-medium leading-[normal] text-brand-strong transition-[background-color,border-color,transform] duration-200 hover:bg-[#eef3ff] max-sm:h-[52px] max-sm:text-base"
               >
-                Buy a gift card
+                Buy Gift Cards
                 <img src={arrowRight} alt="" width="22" height="22" className={cx(btnArrow, '[filter:brightness(0)_saturate(100%)_invert(19%)_sepia(83%)_saturate(2700%)_hue-rotate(213deg)]')} />
               </a>
               <StoreBadges />
