@@ -612,10 +612,8 @@ function Stars({ rating }) {
 }
 
 function Testimonials() {
-  // Samples show while developing locally (or with ?preview=testimonials); the live build stays hidden until real reviews exist
-  const preview = import.meta.env.DEV || new URLSearchParams(window.location.search).get('preview') === 'testimonials';
-  const items = TESTIMONIALS.length ? TESTIMONIALS : preview ? PREVIEW_TESTIMONIALS : [];
-  if (!items.length) return null;
+  // Demo: sample cards show everywhere until real reviews are added to TESTIMONIALS (replace before launch)
+  const items = TESTIMONIALS.length ? TESTIMONIALS : PREVIEW_TESTIMONIALS;
 
   return (
     <section className={section.base} aria-label="Customer stories">
