@@ -1,13 +1,14 @@
 import React from 'react';
+import { cx } from '../ui.js';
 
-// Renders both theme variants of a decorative image; CSS shows the one matching data-theme.
-// Using CSS (not state) keeps every instance in sync with the header toggle and avoids a flash.
+// Renders both theme variants of a decorative image; the light:/dark: variants show the one
+// matching data-theme. Using CSS (not state) keeps every instance in sync with the header
+// toggle and avoids a flash on load.
 export default function ThemedImg({ dark, light, className, ...props }) {
-  const cls = (variant) => (className ? className + ' ' : '') + variant;
   return (
     <>
-      <img src={dark} alt="" className={cls('only-dark')} {...props} />
-      <img src={light} alt="" className={cls('only-light')} {...props} />
+      <img src={dark} alt="" className={cx(className, 'light:hidden!')} {...props} />
+      <img src={light} alt="" className={cx(className, 'dark:hidden!')} {...props} />
     </>
   );
 }

@@ -9,6 +9,9 @@ import iconCompliance from '../assets/icon-compliance.png';
 import iconMerchant from '../assets/icon-merchant.png';
 import iconApi from '../assets/icon-api.png';
 import iconToken from '../assets/icon-token.png';
+import Tabs from './Tabs.jsx';
+import SectionHead from './Section.jsx';
+import { cx, section } from '../ui.js';
 
 // art: box size, plus the image's framing inside it as [top, left, width, height] percentages
 const groups = {
@@ -85,49 +88,53 @@ function ProductArt({ img, art }) {
   }
   const box = (
     <span
-      className={'product-art' + (art.flip ? ' is-flipped' : '')}
+      className="relative block shrink-0 overflow-hidden"
       style={{ width: art.w, height: art.h, transform: art.rotate ? `rotate(${art.rotate}deg)` : undefined }}
     >
-      <img src={img} alt="" style={imgStyle} loading="lazy" />
+      <img src={img} alt="" style={imgStyle} loading="lazy" className={cx('size-full max-w-none object-cover', art.flip && '-scale-x-100')} />
     </span>
   );
   // Rotated art sits in a fixed frame so the rotation doesn't shift the card layout
-  return art.frame ? <span className="product-art-frame" style={{ width: art.frame[0], height: art.frame[1] }}>{box}</span> : box;
+  return art.frame ? <span className="flex items-center justify-center" style={{ width: art.frame[0], height: art.frame[1] }}>{box}</span> : box;
 }
 
 export default function Products() {
   const [group, setGroup] = useState('Individuals');
 
   return (
-    <section className="section section-alt products" id="products">
-      <div className="container">
-        <div className="section-head reveal">
-          <span className="eyebrow">Products</span>
-          <h2>Built for everyone who moves value.</h2>
-          <p className="lead lead-lg">Whether you are trading, running a business, or building a product, Mybitstore gives you the rails.</p>
-          <div className="tabs tabs-products" role="tablist" aria-label="Product audience">
-            {Object.keys(groups).map((g) => (
-              <button key={g} type="button" role="tab" aria-selected={group === g} className={group === g ? 'is-active' : ''} onClick={() => setGroup(g)}>
-                {g}
-              </button>
+    <section className={section.alt} id="products">
+      <div className="site-container">
+        <SectionHead
+          eyebrow="Products"
+          eyebrowClass="mb-3.5 v2:hidden"
+          title="Built for everyone who moves value."
+          lead="Whether you are trading, running a business, or building a product, Mybitstore gives you the rails."
+          leadClass="mt-3.5 max-w-[834px] font-nunito text-2xl leading-[1.2] text-text-muted max-sm:text-lg max-sm:leading-[1.6]"
+        >
+          <Tabs tabs={Object.keys(groups)} active={group} onChange={setGroup} label="Product audience" fill className="w-[261px] light:bg-[#f6f7ff] max-sm:w-full" />
+        </SectionHead>
+        <div className="reveal">
+          <div className="grid animate-[fade-in_0.35s_ease] grid-cols-4 gap-5 max-lg:grid-cols-2 max-sm:grid-cols-1" role="tabpanel" aria-label={group} key={group}>
+            {groups[group].map((p, i) => (
+              <a
+                key={p.name}
+                href={p.href}
+                style={{ animationDelay: `${100 + i * 80}ms` }}
+                className="group/card flex min-h-[414px] flex-col items-center justify-between overflow-hidden rounded-[20px] border border-card-border bg-card px-[15px] py-7 transition-[border-color,translate,box-shadow] duration-200 hover:-translate-y-[3px] hover:border-eyebrow hover:shadow-[var(--shadow)] max-sm:min-h-[360px] revealed:animate-[rise_0.7s_var(--ease-soft)_backwards]"
+              >
+                <span className="flex flex-1 items-center justify-center transition-[translate] duration-500 ease-soft group-hover/card:-translate-y-2">
+                  <ProductArt img={p.img} art={p.art} />
+                </span>
+                <span className="flex w-full flex-col gap-3.5">
+                  <span className="flex items-start justify-between gap-2">
+                    <h3 className="max-w-[249px] text-[30px] font-semibold leading-none tracking-[-0.27px] text-title">{p.name}</h3>
+                    <img src={arrowUpRight} alt="" width="16" height="16" className="shrink-0 transition-transform duration-200 group-hover/card:-translate-y-0.5 group-hover/card:translate-x-0.5" />
+                  </span>
+                  <p className="min-h-[69px] text-base leading-[21px] text-text-muted">{p.copy}</p>
+                </span>
+              </a>
             ))}
           </div>
-        </div>
-        <div className="reveal">
-        <div className="product-grid reveal-stagger" role="tabpanel" aria-label={group} key={group}>
-          {groups[group].map((p) => (
-            <a className="product-card" href={p.href} key={p.name}>
-              <span className="product-art-slot"><ProductArt img={p.img} art={p.art} /></span>
-              <span className="product-text">
-                <span className="product-title">
-                  <h3>{p.name}</h3>
-                  <img src={arrowUpRight} alt="" width="16" height="16" />
-                </span>
-                <p>{p.copy}</p>
-              </span>
-            </a>
-          ))}
-        </div>
         </div>
       </div>
     </section>

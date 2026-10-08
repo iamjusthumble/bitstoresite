@@ -3,6 +3,8 @@ import { links } from '../links.js';
 import plus from '../assets/faq-plus.svg';
 import plusLight from '../assets/faq-plus-light.svg';
 import ThemedImg from './ThemedImg.jsx';
+import SectionHead from './Section.jsx';
+import { section, text } from '../ui.js';
 
 const faqs = [
   {
@@ -27,29 +29,42 @@ const faqs = [
   },
 ];
 
-export default function Faq() {
+// Shared by the home page and the gift cards page
+export function FaqSection({ eyebrow, title, lead, items, alt = false }) {
   return (
-    <section className="section faq">
-      <div className="container faq-inner">
-        <div className="section-head reveal">
-          <span className="eyebrow">FAQ</span>
-          <h2>Questions, answered.</h2>
-          <p className="lead">
-            Can't find what you need? Visit our <a className="inline-link" href={links.support}>Help Center</a>.
-          </p>
-        </div>
-        <div className="faq-list reveal">
-          {faqs.map((f) => (
-            <details key={f.q}>
-              <summary>
-                {f.q}
-                <ThemedImg className="faq-icon" dark={plus} light={plusLight} width="18" height="18" />
+    <section className={alt ? section.alt : section.base}>
+      <div className="mx-auto w-full max-w-[1200px] px-6 max-sm:px-5">
+        <SectionHead
+          className="mb-0 pb-8"
+          eyebrow={eyebrow}
+          eyebrowClass="mb-[18px]"
+          title={title}
+          lead={lead}
+          leadClass="mt-[18px] max-w-[743px] text-lg leading-[27.9px] text-text-muted light:text-[#5d6781] max-sm:text-base max-sm:leading-[1.6]"
+        />
+        <div className="reveal border-t border-card-border light:border-[#e4e8f1]">
+          {items.map(({ q, a }) => (
+            <details key={q} className="group/faq border-b border-card-border light:border-[#e4e8f1]">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-lg font-semibold leading-[27px] text-title light:text-[#0a1024] max-sm:text-base [&::-webkit-details-marker]:hidden">
+                {q}
+                <ThemedImg className="shrink-0 transition-transform duration-[250ms] group-open/faq:rotate-45" dark={plus} light={plusLight} width="18" height="18" />
               </summary>
-              <p>{f.a}</p>
+              <p className="max-w-[620px] pb-6 text-base leading-6 text-text-muted light:text-[#5d6781] group-open/faq:animate-[rise_0.35s_var(--ease-soft)]">{a}</p>
             </details>
           ))}
         </div>
       </div>
     </section>
+  );
+}
+
+export default function Faq() {
+  return (
+    <FaqSection
+      eyebrow="FAQ"
+      title="Questions, answered."
+      lead={<>Can't find what you need? Visit our <a className={text.inlineLink} href={links.support}>Help Center</a>.</>}
+      items={faqs}
+    />
   );
 }

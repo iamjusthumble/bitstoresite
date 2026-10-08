@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { MODE_DRAWS } from '../vendor/thinking-orbs/engine/registry';
 import { resolvePreset } from '../vendor/thinking-orbs/presets';
+import { cx } from '../ui.js';
 
 const isDark = () => document.documentElement.dataset.theme !== 'light';
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -89,7 +90,7 @@ export default function ThinkingOrb({ state = 'working', size = 20, tint, speed 
   return (
     <canvas
       ref={ref}
-      className={'thinking-orb' + (className ? ' ' + className : '')}
+      className={cx('block shrink-0', className)}
       style={{ width: size, height: size }}
       role={label ? 'img' : undefined}
       aria-label={label}

@@ -2,7 +2,7 @@ import React, { useId } from 'react';
 
 export default function Sparkline({ points, up, width = 120, height = 40 }) {
   const gradientId = useId();
-  if (!points || points.length < 2) return <span className="sparkline-empty" style={{ width, height }} />;
+  if (!points || points.length < 2) return <span className="inline-block rounded-md bg-placeholder" style={{ width, height }} />;
 
   const min = Math.min(...points);
   const max = Math.max(...points);
@@ -20,15 +20,15 @@ export default function Sparkline({ points, up, width = 120, height = 40 }) {
   const color = up ? 'var(--up)' : 'var(--down)';
 
   return (
-    <svg className="sparkline" width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
+    <svg className="block" width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={color} stopOpacity="0.18" />
           <stop offset="1" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path className="spark-area" d={area} fill={`url(#${gradientId})`} />
-      <path className="spark-line" pathLength="1" d={line} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+      <path className="revealed:animate-[fade_1s_ease-out_1s_backwards]" d={area} fill={`url(#${gradientId})`} />
+      <path className="[stroke-dasharray:1] revealed:animate-[draw_1.4s_ease-out_0.35s_backwards]" pathLength="1" d={line} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }

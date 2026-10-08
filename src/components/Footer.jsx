@@ -1,9 +1,10 @@
 import React from 'react';
 import { links } from '../links.js';
-import logo from '../assets/logo.svg';
 import storeBadges from '../assets/store-badges.png';
 import socials from '../assets/socials.svg';
 import { VERSIONS, useVersion } from '../version.js';
+import { Logo } from './Header.jsx';
+import { cx } from '../ui.js';
 
 const primaryColumns = [
   {
@@ -81,15 +82,34 @@ const secondaryColumns = [
   },
 ];
 
-function FooterColumns({ columns }) {
+function FooterColumns({ columns, className = '' }) {
   return (
-    <div className="footer-columns">
+    <div className={cx('flex w-[893px] max-w-full justify-between max-sm:flex-col max-sm:gap-8', className)}>
       {columns.map((col) => (
-        <div className="footer-col" key={col.title}>
-          <strong>{col.title}</strong>
-          {col.items.map(([label, href]) => <a key={label} href={href}>{label}</a>)}
+        <div className="flex w-[240px] flex-col gap-5 leading-[1.2]" key={col.title}>
+          <strong className="text-base font-normal text-brand">{col.title}</strong>
+          {col.items.map(([label, href]) => (
+            <a
+              key={label}
+              href={href}
+              className="whitespace-pre-line font-nunito text-sm font-semibold text-[#6f7794] transition-colors duration-150 hover:text-[#aab2cf] light:text-black light:hover:text-brand"
+            >
+              {label}
+            </a>
+          ))}
         </div>
       ))}
+    </div>
+  );
+}
+
+// App store badges sliced from one exported image; each half is a link
+export function StoreBadges() {
+  return (
+    <div className="relative grid h-9 w-[268px] grid-cols-[126px_20px_122px] overflow-hidden">
+      <img src={storeBadges} alt="" className="absolute left-[-0.26%] top-[-100%] h-[200%] w-[100.52%] max-w-none" />
+      <a href={links.googlePlay} aria-label="Get it on Google Play" className="relative col-start-1 row-start-1" />
+      <a href={links.appStore} aria-label="Download on the App Store" className="relative col-start-3 row-start-1" />
     </div>
   );
 }
@@ -97,17 +117,20 @@ function FooterColumns({ columns }) {
 function VersionSwitch() {
   const { version, setVersion } = useVersion();
   return (
-    <div className="version-switch" role="radiogroup" aria-label="Site version">
+    <div className="flex items-center gap-3 font-nunito text-sm font-semibold text-[#6f7794]" role="radiogroup" aria-label="Site version">
       <span>Site version</span>
-      <div className="version-switch-options">
+      <div className="flex gap-0.5 rounded-full border border-tab-border bg-tab-bg p-[3px]">
         {VERSIONS.map((v) => (
           <button
             key={v}
             type="button"
             role="radio"
             aria-checked={version === v}
-            className={version === v ? 'is-active' : ''}
             onClick={() => setVersion(v)}
+            className={cx(
+              'min-w-11 rounded-full px-3 py-[5px] font-euclid text-[13px] font-medium leading-[18px] transition-[background-color,color] duration-200',
+              version === v ? 'bg-tab-active text-white' : 'text-tab-text hover:text-title',
+            )}
           >
             V{v}
           </button>
@@ -120,34 +143,27 @@ function VersionSwitch() {
 // The version switch only applies to the home page layouts
 export default function Footer({ showVersionSwitch = true }) {
   return (
-    <footer className="footer">
-      <div className="footer-top reveal">
-        <div className="footer-brand">
-          <a className="logo" href="/#top" aria-label="Mybitstore home">
-            <img src={logo} alt="" width="36" height="36" />
-            <span>Mybitstore</span>
-          </a>
-          <p className="footer-tagline"><span>Build.</span><span>Trade.</span><span>Move Value</span></p>
-          <div className="store-badges">
-            <img src={storeBadges} alt="" />
-            <a href={links.googlePlay} aria-label="Get it on Google Play" />
-            <a href={links.appStore} aria-label="Download on the App Store" />
-          </div>
+    <footer className="bg-navy px-[92px] py-20 text-white light:bg-[#f7f7fc] light:text-black max-lg:px-8 max-lg:py-16 max-sm:px-5 max-sm:py-14">
+      <div className="reveal mx-auto flex max-w-[1256px] justify-between gap-10 max-lg:flex-col">
+        <div className="flex flex-col gap-[21px]">
+          <Logo />
+          <p className="flex gap-2 text-base leading-[1.2]"><span>Build.</span><span>Trade.</span><span>Move Value</span></p>
+          <StoreBadges />
         </div>
         <FooterColumns columns={primaryColumns} />
       </div>
-      <div className="footer-secondary">
-        <FooterColumns columns={secondaryColumns} />
+      <div className="mx-auto flex max-w-[1256px] justify-end max-lg:justify-start">
+        <FooterColumns columns={secondaryColumns} className="mt-10 border-t border-[#03163e] pt-10" />
       </div>
-      <div className="footer-bottom">
-        <p>© 2026 Mybitstore, Inc. All rights reserved.</p>
+      <div className="mx-auto mt-10 flex max-w-[1256px] items-center justify-between gap-6 border-t border-[#03163e] pt-[54px] max-sm:flex-col max-sm:items-start max-sm:pt-8">
+        <p className="font-nunito text-xl font-semibold leading-[1.2] text-[#6f7794] max-sm:text-base">© 2026 Mybitstore, Inc. All rights reserved.</p>
         {showVersionSwitch && <VersionSwitch />}
-        <div className="socials">
-          <img src={socials} alt="" width="146" height="14" />
-          <a href={links.facebook} aria-label="Facebook" />
+        <div className="relative grid h-3.5 w-[146px] grid-cols-4">
+          <img src={socials} alt="" width="146" height="14" className="absolute inset-0" />
+          <a href={links.facebook} aria-label="Facebook" className="relative" />
           <span aria-hidden="true" />
-          <a href={links.twitter} aria-label="Twitter" />
-          <a href={links.instagram} aria-label="Instagram" />
+          <a href={links.twitter} aria-label="Twitter" className="relative" />
+          <a href={links.instagram} aria-label="Instagram" className="relative" />
         </div>
       </div>
     </footer>
