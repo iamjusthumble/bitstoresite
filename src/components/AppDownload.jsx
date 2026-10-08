@@ -13,7 +13,8 @@ const floatCard = 'rounded-[10px] bg-[rgba(24,27,46,0.7)] leading-[1.2] whitespa
 const floatSlot = 'absolute flex items-center justify-center animate-[bob_6s_ease-in-out_infinite]';
 const appCopy = 'font-nunito text-2xl leading-[1.2] text-[#c2c4cc] light:text-black max-sm:text-lg';
 
-export default function AppDownload() {
+// `glassQr` is the gift cards page variant: bolder 50px headline and the QR code in a glass card
+export default function AppDownload({ glassQr = false }) {
   return (
     <section
       id="download"
@@ -29,15 +30,27 @@ export default function AppDownload() {
       />
       <div className="reveal absolute left-[calc(50%-604px)] top-[120.22px] flex w-[605px] flex-col gap-[35px] max-xl:left-8 max-lg:relative max-lg:left-auto max-lg:top-auto max-lg:mx-auto max-lg:w-full max-lg:max-w-[605px]">
         <div className="flex flex-col gap-[11px]">
-          <h2 className="text-[60px] font-normal leading-[1.06] tracking-[-3px] text-shadow-[0_4px_4px_rgba(0,0,0,0.25)] light:text-shadow-none max-sm:text-[42px] max-sm:tracking-[-1.8px]">
+          <h2
+            className={cx(
+              'leading-[1.06] text-shadow-[0_4px_4px_rgba(0,0,0,0.25)] light:text-shadow-none max-sm:text-[42px] max-sm:tracking-[-1.8px]',
+              glassQr ? 'text-[50px] font-bold tracking-[-2.5px]' : 'text-[60px] font-normal tracking-[-3px]',
+            )}
+          >
             Trade Crypto with<br /><span className="text-[#2d64bc]">Confidence</span>
           </h2>
           <p className={appCopy}>Get insights, tools, and trades - all in the Mybitstore app</p>
         </div>
-        <div className="flex flex-col gap-[17px]">
-          <QrCard />
-          <p className={appCopy}>Scan the QR Code to Download</p>
-        </div>
+        {glassQr ? (
+          <div className="flex w-fit flex-col items-center gap-3 rounded-3xl border border-white/25 bg-white/12 p-5 backdrop-blur-[10px]">
+            <QrCard />
+            <p className="text-sm leading-[21px] text-white light:text-black">Scan to download</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-[17px]">
+            <QrCard />
+            <p className={appCopy}>Scan the QR Code to Download</p>
+          </div>
+        )}
       </div>
 
       <div

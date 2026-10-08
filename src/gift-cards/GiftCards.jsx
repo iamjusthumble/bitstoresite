@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../components/Header.jsx';
-import Footer, { StoreBadges } from '../components/Footer.jsx';
+import Footer from '../components/Footer.jsx';
 import { FaqSection } from '../components/Faq.jsx';
 import SectionHead from '../components/Section.jsx';
-import { DownloadButton, QrCard } from '../components/Hero.jsx';
+import { DownloadButton } from '../components/Hero.jsx';
+import AppDownload from '../components/AppDownload.jsx';
+import ctaPhoto from '../assets/gift-cta-photo.jpg';
 import { links } from '../links.js';
 import { useReveal } from '../reveal.js';
 import { btn, btnArrow, cx, section, text } from '../ui.js';
@@ -678,24 +680,17 @@ function Cta() {
   return (
     <section className="bg-page py-24 max-sm:py-16">
       <div className="site-container">
-        <div className="reveal relative flex items-center justify-between gap-10 overflow-hidden rounded-[32px] px-16 py-14 text-white [background:radial-gradient(500px_360px_at_85%_50%,rgba(143,176,255,0.35),transparent_70%),linear-gradient(120deg,#1a379e,#2f60e0_55%,#3d6ef0)] before:pointer-events-none before:absolute before:inset-0 before:bg-[repeating-radial-gradient(circle_at_100%_0%,rgba(255,255,255,0.06)_0_1px,transparent_1px_26px)] before:content-[''] max-lg:flex-col max-lg:items-start max-lg:px-9 max-lg:py-11 max-sm:rounded-3xl max-sm:px-[22px] max-sm:py-8">
-          <div className="relative max-w-[560px]">
-            <h2 className="text-[44px] font-semibold leading-[1.08] tracking-[-1.4px] max-sm:text-[34px]">Your next gift card is a few taps away.</h2>
-            <p className="mt-3.5 font-nunito text-xl leading-[1.4] text-white/80">Open Gift Cards in the Mybitstore app, or scan the code to download it.</p>
-            <div className="mt-[30px] flex flex-wrap items-center gap-5">
-              <a
-                href={links.trade}
-                className="group/btn inline-flex h-[60px] items-center justify-center gap-2.5 whitespace-nowrap rounded-lg border border-transparent bg-white px-4 font-euclid text-lg font-medium leading-[normal] text-brand-strong transition-[background-color,border-color,transform] duration-200 hover:bg-[#eef3ff] max-sm:h-[52px] max-sm:text-base"
-              >
-                Buy Gift Cards
-                <img src={arrowRight} alt="" width="22" height="22" className={cx(btnArrow, '[filter:brightness(0)_saturate(100%)_invert(19%)_sepia(83%)_saturate(2700%)_hue-rotate(213deg)]')} />
-              </a>
-              <StoreBadges />
-            </div>
-          </div>
-          <div className="relative flex flex-col items-center gap-3 rounded-3xl border border-white/25 bg-white/12 p-5 text-sm backdrop-blur-[10px]">
-            <QrCard />
-            <span>Scan to download</span>
+        <div className="reveal relative isolate flex min-h-[367px] items-center justify-center overflow-hidden rounded-[32px] px-6 py-14 text-center text-white [background:radial-gradient(500px_360px_at_85%_50%,rgba(2,5,13,0.35),transparent_70%),linear-gradient(153deg,#1a379e_7.7%,#060d1e_54.2%,#000_92.3%)] max-sm:rounded-3xl max-sm:py-12">
+          <img src={ctaPhoto} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 -z-1 size-full max-w-none object-cover opacity-30" />
+          <div className="flex max-w-[560px] flex-col items-center">
+            <h2 className="text-[44px] font-semibold leading-[47.52px] tracking-[-1.4px] max-sm:text-[34px] max-sm:leading-[1.1]">Your next gift card is a few taps away.</h2>
+            <p className="mt-3.5 font-nunito text-xl leading-7 text-white/80">Open Gift Cards in the Mybitstore app, or scan the code to download it.</p>
+            <a
+              href={links.trade}
+              className="mt-[30px] inline-flex h-[60px] items-center justify-center rounded-lg bg-white px-4 font-euclid text-lg font-medium leading-[normal] text-brand-strong transition-colors duration-200 hover:bg-[#eef3ff] max-sm:h-[52px] max-sm:text-base"
+            >
+              Buy Gift Cards
+            </a>
           </div>
         </div>
       </div>
@@ -729,6 +724,7 @@ export default function GiftCards() {
           items={FAQS}
         />
         <Cta />
+        <AppDownload glassQr />
       </main>
       <Footer showVersionSwitch={false} />
     </div>
