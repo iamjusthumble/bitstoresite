@@ -7,6 +7,7 @@ import { DownloadButton, QrCard } from '../components/Hero.jsx';
 import { links } from '../links.js';
 import { useReveal } from '../reveal.js';
 import { btn, btnArrow, cx, section, text } from '../ui.js';
+import { PREVIEW_TESTIMONIALS, TESTIMONIALS } from './testimonials.js';
 import logo from '../assets/logo.svg';
 import arrowRight from '../assets/arrow-right.svg';
 import coinBtc from '../assets/coin-btc.svg';
@@ -591,6 +592,80 @@ function Values() {
   );
 }
 
+/* ---------- Testimonials (real reviews only; see testimonials.js) ---------- */
+
+const AVATAR_TONES = ['blue', 'violet', 'teal', 'rose', 'amber'];
+const initials = (name) => name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+
+function Stars({ rating }) {
+  return (
+    <span className="flex gap-0.5" role="img" aria-label={`Rated ${rating} out of 5`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <svg key={n} width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" className={n <= rating ? 'fill-[#f5b301]' : 'fill-gc-line'}>
+          <path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9L12 2.8Z" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
+function Testimonials() {
+  // Samples show while developing locally (or with ?preview=testimonials); the live build stays hidden until real reviews exist
+  const preview = import.meta.env.DEV || new URLSearchParams(window.location.search).get('preview') === 'testimonials';
+  const items = TESTIMONIALS.length ? TESTIMONIALS : preview ? PREVIEW_TESTIMONIALS : [];
+  if (!items.length) return null;
+
+  return (
+    <section className={section.base} aria-label="Customer stories">
+      <div className="site-container">
+        <SectionHead eyebrow="Customer stories" title="Hear it from our customers." lead="What people say about buying gift cards on Mybitstore.">
+          {!TESTIMONIALS.length && (
+            <span className="mt-5 rounded-full border border-dashed border-[#ff9500]/60 bg-[#ff9500]/10 px-4 py-1.5 text-[13px] font-medium text-[#ee8200] dark:text-[#ffb547]">
+              Design preview with sample content. Add real reviews in testimonials.js.
+            </span>
+          )}
+        </SectionHead>
+        <ul className="reveal grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1">
+          {items.map((t, i) => (
+            <li
+              key={t.name + i}
+              style={stagger(i, 100, 80)}
+              className={cx(
+                'group/quote relative flex flex-col overflow-hidden rounded-3xl border border-card-border bg-card p-7 transition-[translate,border-color,box-shadow] duration-300 ease-soft hover:-translate-y-1 hover:border-gc-accent/50 hover:shadow-[0_30px_60px_-36px_rgba(5,10,30,0.6)] light:border-[#e4e8f1] light:bg-white',
+                rise('0.7s'),
+              )}
+            >
+              <figure className="flex h-full flex-col">
+                <div className="flex items-center justify-between gap-3">
+                  <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true" className="fill-gc-accent/30 transition-colors duration-300 group-hover/quote:fill-gc-accent/50">
+                    <path d="M9.6 6C6.5 7.3 4.5 10 4.5 13.6V18h6v-6H7.6c.2-2 1.3-3.5 3.1-4.4L9.6 6Zm9 0c-3.1 1.3-5.1 4-5.1 7.6V18h6v-6h-2.9c.2-2 1.3-3.5 3.1-4.4L18.6 6Z" />
+                  </svg>
+                  {t.rating && <Stars rating={t.rating} />}
+                </div>
+                <blockquote className="mt-5 flex-1 text-[17px] leading-[27px] text-title">“{t.quote}”</blockquote>
+                <figcaption className="mt-7 flex items-center gap-3 border-t border-gc-line pt-5">
+                  <span className={cx('grid size-11 shrink-0 place-items-center rounded-full text-sm font-semibold text-white', TONE[AVATAR_TONES[i % AVATAR_TONES.length]])}>
+                    {initials(t.name)}
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <strong className="truncate text-[15px] font-semibold text-title">{t.name}</strong>
+                    {(t.location || t.date) && (
+                      <span className="truncate text-[13px] text-text-muted">{[t.location, t.date].filter(Boolean).join(' · ')}</span>
+                    )}
+                  </span>
+                  {t.source && (
+                    <span className="shrink-0 rounded-full border border-gc-line bg-gc-panel-2 px-2.5 py-1 text-[11.5px] font-medium text-gc-muted">{t.source}</span>
+                  )}
+                </figcaption>
+              </figure>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 const FAQS = [
   { q: 'How do I receive a gift card I buy?', a: 'Your card is delivered to the email address you enter at checkout, so make sure it is valid. You can also find the code and redemption steps in History.' },
   { q: 'How can I pay for a gift card?', a: 'Use a saved payment account, a one-time method, or crypto. You see a full checkout preview before you confirm.' },
@@ -645,6 +720,7 @@ export default function GiftCards() {
         <Finder onPick={pickSearch} />
         <Walkthrough search={search} />
         <Values />
+        <Testimonials />
         <FaqSection
           alt
           eyebrow="Gift card FAQ"

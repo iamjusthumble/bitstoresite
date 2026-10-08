@@ -9,7 +9,9 @@ const SELECTOR = '.reveal, .reveal-scope';
 // and with reduced motion.
 export function useReveal(key) {
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    // Keep everything visible for reduced motion and for Figma captures (?capture or a #figma… capture hash)
+    const capturing = /capture/i.test(window.location.search) || /figma/i.test(window.location.hash);
+    if (capturing || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     const root = document.documentElement;
 
     // Show once a meaningful slice is on screen...
