@@ -11,6 +11,7 @@ export default defineConfig({
         main: resolve(import.meta.dirname, 'index.html'),
         lensLogin: resolve(import.meta.dirname, 'lens/login/index.html'),
         giftCards: resolve(import.meta.dirname, 'gift-cards/index.html'),
+        webApp: resolve(import.meta.dirname, 'app/index.html'),
       },
     },
   },

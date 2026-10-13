@@ -42,6 +42,10 @@ function load() {
         coins[row.id] = {
           price: row.current_price,
           change: row.price_change_percentage_24h,
+          volume: row.total_volume,
+          marketCap: row.market_cap,
+          high: row.high_24h,
+          low: row.low_24h,
           image: row.image,
           // Last 24 hourly points, matching the 24h change shown next to the chart
           spark: (row.sparkline_in_7d?.price || []).slice(-24),
@@ -52,6 +56,9 @@ function load() {
     // Keep the last good data if a refresh fails
     .catch(() => state.status !== 'ready' && setState({ status: 'error', coins: {} }));
 }
+
+// Pulls fresh prices now instead of waiting for the next poll
+export const refreshMarketData = load;
 
 export function useMarketData() {
   const [snapshot, setSnapshot] = useState(state);

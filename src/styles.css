@@ -107,6 +107,19 @@
   --color-ll-placeholder: var(--ll-placeholder);
   --color-ll-error: var(--ll-error);
   --color-ll-badge-bg: var(--ll-badge-bg);
+
+  /* Web app (/app/) surfaces */
+  --color-wa-bg: var(--wa-bg);
+  --color-wa-side: var(--wa-side);
+  --color-wa-card: var(--wa-card);
+  --color-wa-pill: var(--wa-pill);
+  --color-wa-pill-hover: var(--wa-pill-hover);
+  --color-wa-inset: var(--wa-inset);
+  --color-wa-line: var(--wa-line);
+  --color-wa-text: var(--wa-text);
+  --color-wa-muted: var(--wa-muted);
+  --color-wa-accent: var(--wa-accent);
+  --color-wa-warn: var(--wa-warn);
 }
 
 @layer base {
@@ -198,6 +211,20 @@
     --ll-error: #d64545;
     --ll-badge-bg: #0a1224;
 
+    /* Web app (/app/) */
+    --wa-bg: #000b1e;
+    --wa-side: #0a1224;
+    --wa-card: #0d1529;
+    --wa-pill: #131c44;
+    --wa-pill-hover: #1b2658;
+    --wa-inset: #0a1224;
+    --wa-line: #1e2740;
+    --wa-text: #eef1f8;
+    --wa-muted: #8f98b3;
+    --wa-accent: #5b8cff;
+    --wa-warn: #fba94b;
+    --wa-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.7);
+
     color-scheme: dark;
     font-family: var(--font-euclid);
     font-size: 16px;
@@ -269,6 +296,19 @@
     --ll-field-shadow: 0 1px 2px rgba(10, 16, 36, 0.06);
     --ll-placeholder: #a3abc0;
     --ll-badge-bg: #f5f7fb;
+
+    --wa-bg: #f7f7fc;
+    --wa-side: #ffffff;
+    --wa-card: #ffffff;
+    --wa-pill: #f1f4fa;
+    --wa-pill-hover: #e6ebf5;
+    --wa-inset: #ffffff;
+    --wa-line: #e4e8f1;
+    --wa-text: #0a1024;
+    --wa-muted: #5d6781;
+    --wa-accent: #0c68e9;
+    --wa-warn: #b86a00;
+    --wa-shadow: 0 16px 40px -16px rgba(10, 16, 36, 0.22);
   }
 
   html { scroll-behavior: smooth; scroll-padding-top: 96px; }
@@ -324,6 +364,7 @@
 @keyframes draw { from { stroke-dashoffset: 1; } }
 @keyframes wipe { from { clip-path: inset(-50% 100% -50% -50%); } to { clip-path: inset(-50% -50% -50% -50%); } }
 @keyframes fill-bar { from { scale: 0 1; } }
+@keyframes fill-bar-up { from { scale: 1 0; } }
 @keyframes ring-in { from { opacity: 0; rotate: -120deg; } }
 @keyframes heat { 50% { opacity: 0.55; } }
 @keyframes typing { 0% { opacity: 0; translate: 0 6px; } 15%, 82% { opacity: 1; translate: 0 0; } 100% { opacity: 0; } }

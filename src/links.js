@@ -16,6 +16,7 @@ export const links = {
   regulatoryReporting: site + '/regulatory-reporting',
   lensLogin: '/lens/login/',
   giftCardsPage: '/gift-cards/',
+  webApp: '/app/',
   apis: site + '/crypto-apis',
   tokenLaunch: site + '/token-launch',
   giftCards: site + '/gift-cards',

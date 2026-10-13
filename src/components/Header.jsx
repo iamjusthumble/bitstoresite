@@ -154,6 +154,13 @@ export default function Header() {
                 onClose={closeAll}
               />
             ))}
+            <a
+              href={links.webApp}
+              onClick={closeAll}
+              className="py-1.5 font-nunito text-sm leading-[1.2] text-white light:text-[#0f121e] max-lg:border-b max-lg:border-[#1e2740] max-lg:py-4 max-lg:text-[17px] light:max-lg:border-[#e4e8f1]"
+            >
+              Web App
+            </a>
             <div className="hidden max-lg:mt-5 max-lg:grid max-lg:grid-cols-2 max-lg:gap-3">
               <a className={cx(btn.outline, 'h-11')} href={links.login}>Log In</a>
               <a className={btn.primaryTall} href={links.signup}>Sign Up</a>
