@@ -98,7 +98,7 @@ function TradePanel({ coin, initialSide }) {
       <div id="wa-side-panel" role="tabpanel" aria-labelledby={`wa-side-${side}`}>
         {side === 'buy' ? (
           <>
-            <h2 className="mt-6 text-base font-semibold leading-6 text-wa-muted">Select wallet to buy with</h2>
+            <h2 className="mt-6 text-base font-semibold leading-6 text-wa-muted">Choose where your crypto goes</h2>
             <div className="mt-3 grid gap-3">
               {WALLETS.map((wallet) => (
                 <a

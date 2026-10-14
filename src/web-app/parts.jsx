@@ -28,8 +28,8 @@ export const tradeHref = (coin, side = 'buy', part) => `#${side}/${coin.symbol.t
 
 // The two places crypto can be bought into. Selling needs no wallet choice: it comes out of the balance
 export const WALLETS = [
-  { key: 'external', name: 'External Wallet', icon: walletExternal, tint: 'bg-tab-active/15', buy: 'Buy crypto into an external wallet' },
-  { key: 'mybitstore', name: 'Mybitstore wallet', icon: walletMybitstore, tint: 'bg-[#467777]/30', buy: 'Buy crypto into Mybitstore wallet' },
+  { key: 'external', name: 'External wallet', icon: walletExternal, tint: 'bg-tab-active/15', buy: 'Buy crypto into an external wallet' },
+  { key: 'mybitstore', name: 'Mybitstore wallet', icon: walletMybitstore, tint: 'bg-[#467777]/30', buy: 'Buy crypto into your Mybitstore wallet' },
 ];
 
 export function Change({ value, className }) {

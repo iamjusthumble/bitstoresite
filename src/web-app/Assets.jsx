@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { links } from '../links.js';
 import { COINS, refreshMarketData, useMarketData } from '../marketData.js';
 import Sparkline from '../components/Sparkline.jsx';
 import { cx } from '../ui.js';
@@ -59,7 +58,7 @@ function BestToBuy() {
     <section className={cx(card, 'flex flex-col')} aria-labelledby="wa-best">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 id="wa-best" className={cardTitle}>Best to buy</h2>
+          <h2 id="wa-best" className={cardTitle}>Top gainer</h2>
           <p className="mt-0.5 text-sm leading-5 text-wa-muted">Biggest 24h gain right now</p>
         </div>
         <button type="button" onClick={refresh} aria-label="Refresh prices" className="grid size-9 place-items-center rounded-[10px] border border-wa-line text-wa-muted transition-colors duration-150 hover:bg-wa-pill hover:text-wa-text">
@@ -156,7 +155,7 @@ function Summary({ hidden }) {
           </div>
         ))}
       </dl>
-      <a href={links.login} className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-wa-text text-base font-bold leading-6 text-wa-bg transition-opacity duration-150 hover:opacity-85">
+      <a href="#withdraw" className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-wa-text text-base font-bold leading-6 text-wa-bg transition-opacity duration-150 hover:opacity-85">
         Withdraw
       </a>
     </section>

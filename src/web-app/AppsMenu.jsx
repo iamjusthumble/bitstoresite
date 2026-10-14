@@ -21,11 +21,11 @@ import withdraw from '../assets/wa-menu/withdraw.svg';
 // Icons are 40px Figma exports drawn at their natural size (the gift is smaller, so it is offset into place).
 // Destinations inside the web app use a hash; everything else opens the live Mybitstore app or site
 const GROUPS = [
-  ['Buy & Sell crypto', [['Deposit', deposit, links.login], ['Buy Crypto', buy, '#buy/btc'], ['Sell Crypto', sell, '#sell/btc'], ['Withdraw', withdraw, links.login]]],
-  ['Trade', [['Swap', swap, links.trade], ['Gift Cards', gift, '#gift-cards', 'object-[3.33px_2.08px]'], ['Pay', pay, links.pay]]],
-  ['Finance', [['Send Money', sendMoney, links.trade], ['Credit Score', creditScore, links.creditScore], ['Payments', payments, '#payments'], ['History', history, '#activity']]],
-  ['Events', [['Rewards', rewards, links.login], ['Invite', invite, '#referral'], ['Leaderboard', leaderboard, links.login], ['Boost Rank', boost, links.login]]],
-  ['Services', [['Help Center', help, links.support]]],
+  ['Buy & sell crypto', [['Deposit', deposit, '#deposit'], ['Buy crypto', buy, '#buy/btc'], ['Sell crypto', sell, '#sell/btc'], ['Withdraw', withdraw, '#withdraw']]],
+  ['Trade', [['Swap', swap, links.trade], ['Gift cards', gift, '#gift-cards', 'object-[3.33px_2.08px]'], ['Pay', pay, links.pay]]],
+  ['Finance', [['Send money', sendMoney, links.trade], ['Credit score', creditScore, links.creditScore], ['Payments', payments, '#payments'], ['History', history, '#activity']]],
+  ['Events', [['Rewards', rewards, links.login], ['Invite', invite, '#referral'], ['Leaderboard', leaderboard, links.login], ['Boost rank', boost, links.login]]],
+  ['Services', [['Help centre', help, links.support]]],
 ];
 
 const MENU_WIDTH = 465;

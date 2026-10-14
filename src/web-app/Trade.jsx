@@ -21,8 +21,8 @@ function Tokens() {
           <span role="columnheader" className="pl-11">Name</span>
           {/* sr-only text sits inside the cell: an absolutely placed header would drop out of the grid */}
           <span role="columnheader" className="max-md:hidden"><span className="sr-only">Last 24 hours</span></span>
-          <span role="columnheader" className="max-sm:text-right">Last Price</span>
-          <span role="columnheader" className="max-sm:hidden">24h Chg%</span>
+          <span role="columnheader" className="max-sm:text-right">Last price</span>
+          <span role="columnheader" className="max-sm:hidden">24h change</span>
           <span role="columnheader"><span className="sr-only">Action</span></span>
         </div>
         {COINS.map((meta) => {

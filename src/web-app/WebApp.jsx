@@ -9,9 +9,12 @@ import { cx } from '../ui.js';
 import AppsMenu, { menuPosition } from './AppsMenu.jsx';
 import Assets from './Assets.jsx';
 import Home from './Home.jsx';
+import Deposit from './Deposit.jsx';
 import Order from './Order.jsx';
+import Withdraw from './Withdraw.jsx';
 import Token from './Token.jsx';
 import TradeView from './Trade.jsx';
+import { FigmaCopyButton, useFigmaShortcut } from './figmaCopy.jsx';
 import { useStored } from './format.jsx';
 import { ArrowLeft, Bell, Card, Gift, Grid, Home as HomeIcon, Search, Settings, Sidebar, Trade, Users, Wallet } from './icons.jsx';
 import { coinBySymbol, tokenHref } from './parts.jsx';
@@ -19,23 +22,27 @@ import { coinBySymbol, tokenHref } from './parts.jsx';
 const NAV = [
   ['home', 'Home', HomeIcon],
   ['assets', 'My assets', Wallet],
-  ['trade', 'Trade (Buy & Sell)', Trade],
+  ['trade', 'Buy & sell', Trade],
   ['payments', 'Payment methods', Card],
   ['gift-cards', 'Gift cards', Gift],
   ['referral', 'Referral', Users],
   ['notifications', 'Notifications', Bell],
   ['settings', 'Settings', Settings],
 ];
-const TITLES = { ...Object.fromEntries(NAV.map(([id, label]) => [id, label])), trade: 'Trade', activity: 'Activity' };
+const TITLES = { ...Object.fromEntries(NAV.map(([id, label]) => [id, label])), trade: 'Buy & sell', activity: 'Activity', deposit: 'Deposit', withdraw: 'Withdraw' };
 
 // Routes live in the URL hash: #home, #assets, … #token/eth for a coin's details, and #buy/eth or #sell/eth for
-// the order page, which takes a step (#buy/eth/review, #buy/eth/done) or, when buying, a wallet (#buy/eth/external)
+// the order page, which takes a step (#buy/eth/review, #buy/eth/done) or, when buying, a wallet (#buy/eth/external).
+// Deposits are #deposit (with crypto) or #deposit/fiat, and withdrawals #withdraw (to a wallet), #withdraw/user
+// or #withdraw/fiat, each followed by a step in the same way
 function readRoute() {
   const [id, symbol, side] = window.location.hash.slice(1).split('/');
   if (id === 'token' && coinBySymbol[symbol]) return { id, coin: coinBySymbol[symbol], side: side === 'sell' ? 'sell' : 'buy' };
   if ((id === 'buy' || id === 'sell') && coinBySymbol[symbol]) {
     return { id: 'order', side: id, coin: coinBySymbol[symbol], step: ['review', 'done'].includes(side) ? side : 'details', wallet: ['external', 'mybitstore'].includes(side) ? side : undefined };
   }
+  if (id === 'deposit') return { id, way: symbol === 'fiat' ? 'fiat' : 'crypto', step: side || 'details' };
+  if (id === 'withdraw') return { id, way: ['user', 'fiat'].includes(symbol) ? symbol : 'wallet', step: side || 'details' };
   return { id: TITLES[id] ? id : 'home' };
 }
 
@@ -52,9 +59,9 @@ function useRoute() {
       const next = readRoute();
       current.current = next;
       setRoute(next);
-      // Review and Done open as dialogs over the order form, so the page behind keeps its place
-      const sameOrder = prev.id === 'order' && next.id === 'order' && prev.side === next.side && prev.coin === next.coin;
-      if (!sameOrder || (prev.step === 'done' && next.step === 'details')) window.scrollTo(0, 0);
+      // Review and Done open as dialogs over the form, so the page behind keeps its place
+      const sameForm = prev.id === next.id && ((next.id === 'order' && prev.side === next.side && prev.coin === next.coin) || (['deposit', 'withdraw'].includes(next.id) && prev.way === next.way));
+      if (!sameForm || (prev.step === 'done' && next.step === 'details')) window.scrollTo(0, 0);
     };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
@@ -252,7 +259,7 @@ function ComingSoon({ view }) {
       <h2 className="mt-6 text-2xl font-semibold leading-8 tracking-[-0.3px] text-wa-text">{TITLES[view]} is coming to the web app</h2>
       <p className="mt-2 max-w-[440px] text-base leading-6 text-wa-muted">This section isn’t available here yet. You can use it today in the Mybitstore app.</p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <a href="#home" className="inline-flex h-11 items-center rounded-full bg-wa-pill px-6 text-[15px] font-bold leading-6 text-wa-text hover:bg-wa-pill-hover">Back to Home</a>
+        <a href="#home" className="inline-flex h-11 items-center rounded-full bg-wa-pill px-6 text-[15px] font-bold leading-6 text-wa-text hover:bg-wa-pill-hover">Back to home</a>
         <a href={view === 'gift-cards' ? links.giftCardsPage : links.login} className="inline-flex h-11 items-center rounded-full bg-tab-active px-6 text-[15px] font-bold leading-6 text-white hover:bg-brand-strong">
           {view === 'gift-cards' ? 'Explore gift cards' : 'Open Mybitstore'}
         </a>
@@ -269,15 +276,17 @@ export default function WebApp() {
   // The shortcuts menu opens below the grid icon, or to the left of Quick actions → More
   const [menu, setMenu] = useState(null);
   const searchRef = useRef(null);
-  // Token and buy pages are reached from another view, so they show Back instead of a title
-  const nested = view === 'token' || view === 'order';
+  // Token, buy, deposit and withdraw pages are reached from another view, so they show Back instead of a title
+  const nested = ['token', 'order', 'deposit', 'withdraw'].includes(view);
   const title = view === 'token' ? route.coin.name : view === 'order' ? `${route.side === 'buy' ? 'Buy' : 'Sell'} ${route.coin.name}` : TITLES[view];
+
+  useFigmaShortcut();
 
   const closeMenu = useCallback(() => setMenu(null), []);
   const toggleMenu = useCallback((trigger, side) => setMenu((current) => (current?.trigger === trigger ? null : { trigger, position: menuPosition(trigger, side) })), []);
 
   useEffect(() => {
-    document.title = `${title} · Mybitstore Web App`;
+    document.title = `${title} · Mybitstore web app`;
   }, [title]);
 
   // "/" jumps to search, as in most dashboards; Escape closes the mobile drawer
@@ -302,7 +311,7 @@ export default function WebApp() {
   return (
     <div className="flex min-h-screen bg-wa-bg font-nunito text-wa-text">
       {/* A token page keeps Home highlighted: it is reached from, and returns to, the dashboard */}
-      <SideMenu view={view === 'token' ? 'home' : view === 'order' ? 'trade' : view} collapsed={collapsed} onCollapse={() => setCollapsed((c) => !c)} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <SideMenu view={['token', 'deposit', 'withdraw'].includes(view) ? 'home' : view === 'order' ? 'trade' : view} collapsed={collapsed} onCollapse={() => setCollapsed((c) => !c)} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       {drawerOpen && <button type="button" aria-label="Close menu" className="fixed inset-0 z-40 bg-black/55 lg:hidden" onClick={() => setDrawerOpen(false)} />}
 
       <div className="mx-auto min-w-0 max-w-[1280px] flex-1 px-10 pb-10 max-lg:px-6 max-sm:px-4">
@@ -327,6 +336,7 @@ export default function WebApp() {
                 Preview · sample data
               </span>
             )}
+            <FigmaCopyButton className="max-sm:hidden" />
           </div>
           <TokenSearch inputRef={searchRef} />
           <a href="#notifications" className={roundBtn} aria-label="Notifications"><Bell size={22} /></a>
@@ -343,8 +353,10 @@ export default function WebApp() {
           {view === 'token' && <Token coin={route.coin} side={route.side} />}
           {view === 'assets' && <Assets />}
           {view === 'trade' && <TradeView />}
+          {view === 'deposit' && <Deposit way={route.way} step={route.step} />}
+          {view === 'withdraw' && <Withdraw way={route.way} step={route.step} />}
           {view === 'order' && <Order key={`${route.side}-${route.coin.id}`} coin={route.coin} side={route.side} step={route.step} initialWallet={route.wallet} />}
-          {!['home', 'token', 'assets', 'trade', 'order'].includes(view) && <ComingSoon view={view} />}
+          {!['home', 'token', 'assets', 'trade', 'order', 'deposit', 'withdraw'].includes(view) && <ComingSoon view={view} />}
         </main>
       </div>
 

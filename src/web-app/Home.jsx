@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { links } from '../links.js';
 import { COINS, formatPrice, useMarketData } from '../marketData.js';
 import Sparkline from '../components/Sparkline.jsx';
 import { cx } from '../ui.js';
@@ -53,9 +52,9 @@ const quickAction =
 
 function QuickActions({ onMore }) {
   const actions = [
-    [Deposit, 'Deposit', links.login],
-    [Trade, 'Buy & Sell', '#buy/btc'],
-    [Withdraw, 'Withdraw', links.login],
+    [Deposit, 'Deposit', '#deposit'],
+    [Trade, 'Buy & sell', '#buy/btc'],
+    [Withdraw, 'Withdraw', '#withdraw'],
   ];
   return (
     <section className={cx(card, 'w-[320px] shrink-0 max-md:w-full')} aria-labelledby="wa-actions">
@@ -119,7 +118,7 @@ function Activities({ hidden }) {
   return (
     <section className={card} aria-labelledby="wa-activity">
       <div className="flex items-center justify-between gap-4">
-        <h2 id="wa-activity" className={cardTitle}>Recent activities</h2>
+        <h2 id="wa-activity" className={cardTitle}>Recent activity</h2>
         <a href="#activity" className={seeAll}>See all <ChevronRight size={14} /></a>
       </div>
       <ul className="mt-6 grid gap-6">
@@ -165,7 +164,7 @@ function tokenRows(tab, coins, favourites) {
 }
 
 const EMPTY = {
-  Favourites: 'No favourites yet. Tap the star beside a token to keep it here.',
+  Favourites: 'No favourites yet. Star a token to keep it here.',
   Gainers: 'No tokens are up over the last 24 hours.',
   Losers: 'No tokens are down over the last 24 hours.',
 };

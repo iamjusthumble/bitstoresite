@@ -20,11 +20,22 @@ export const ACTIVITIES = [
   { id: 3, type: 'Deposit', status: 'Completed', amount: 0.3289, symbol: 'BTC', usd: 20844.46 },
 ];
 
-// Saved payment accounts, as shown in the Figma buy flow. `use` is the side each one is set up for.
+// Saved payment accounts, as shown in the Figma buy flow. `use` is the side each one is set up for;
+// `label` is how the account reads in a sentence or a summary row.
 export const PAYMENT_METHODS = [
-  { id: 'mtn', name: 'MTN', kind: 'Mobile Money', holder: 'Johnathan Doe', detail: '+23305*******9033', use: 'buy' },
-  { id: 'card', name: 'Debit Card', kind: 'Bank Card', holder: 'Johnathan Doe', detail: '***********', use: 'sell' },
+  { id: 'mtn', name: 'MTN', kind: 'Mobile Money', label: 'MTN Mobile Money', holder: 'Johnathan Doe', detail: '+23305*******9033', use: 'buy' },
+  { id: 'card', name: 'Debit card', kind: 'Bank card', label: 'Debit card', holder: 'Johnathan Doe', detail: '***********', use: 'sell' },
 ];
+
+// Sample deposit addresses, one per network. Each is malformed on purpose (wrong characters, no valid checksum)
+// so a wallet rejects it: nothing real is behind this preview, and nobody should be able to send funds to one.
+export const DEPOSIT_ADDRESSES = {
+  bitcoin: 'bc1qreffisyihy8973hd8y9ss8dyihabd8ad8ytshgusucucg',
+  ethereum: '0xsampleaddresspreviewonly00000000000000000',
+  tron: 'TsampleAddressPreviewOnly0000000000',
+  litecoin: 'ltc1qsampleaddresspreviewonlyio0000000000000',
+  'bitcoin-cash': 'bitcoincash:qsampleaddresspreviewonlyio00000000000000',
+};
 
 // Placeholder fee from the Figma preview (1.00 USD on a 100 USD purchase), not the real fee schedule.
 // Added to a purchase and taken out of a sale.
