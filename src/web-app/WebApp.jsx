@@ -11,6 +11,10 @@ import Assets from './Assets.jsx';
 import Home from './Home.jsx';
 import Deposit from './Deposit.jsx';
 import Order from './Order.jsx';
+import Payments from './Payments.jsx';
+import NotificationsView, { NotificationsBell, useUnreadCount } from './Notifications.jsx';
+import SettingsView, { SETTINGS_TABS } from './Settings.jsx';
+import { fullName, useProfile } from './account.js';
 import Withdraw from './Withdraw.jsx';
 import Token from './Token.jsx';
 import TradeView from './Trade.jsx';
@@ -34,7 +38,7 @@ const TITLES = { ...Object.fromEntries(NAV.map(([id, label]) => [id, label])), t
 // Routes live in the URL hash: #home, #assets, … #token/eth for a coin's details, and #buy/eth or #sell/eth for
 // the order page, which takes a step (#buy/eth/review, #buy/eth/done) or, when buying, a wallet (#buy/eth/external).
 // Deposits are #deposit (with crypto) or #deposit/fiat, and withdrawals #withdraw (to a wallet), #withdraw/user
-// or #withdraw/fiat, each followed by a step in the same way
+// or #withdraw/fiat, each followed by a step in the same way. #payments/add opens the add-account form, and #settings/<section> picks a Settings tab
 function readRoute() {
   const [id, symbol, side] = window.location.hash.slice(1).split('/');
   if (id === 'token' && coinBySymbol[symbol]) return { id, coin: coinBySymbol[symbol], side: side === 'sell' ? 'sell' : 'buy' };
@@ -42,6 +46,8 @@ function readRoute() {
     return { id: 'order', side: id, coin: coinBySymbol[symbol], step: ['review', 'done'].includes(side) ? side : 'details', wallet: ['external', 'mybitstore'].includes(side) ? side : undefined };
   }
   if (id === 'deposit') return { id, way: symbol === 'fiat' ? 'fiat' : 'crypto', step: side || 'details' };
+  if (id === 'payments') return { id, adding: symbol === 'add' };
+  if (id === 'settings') return { id, tab: [...SETTINGS_TABS.map(([key]) => key), 'delete-account'].includes(symbol) ? symbol : 'profile' };
   if (id === 'withdraw') return { id, way: ['user', 'fiat'].includes(symbol) ? symbol : 'wallet', step: side || 'details' };
   return { id: TITLES[id] ? id : 'home' };
 }
@@ -98,6 +104,7 @@ function ThemeSwitch({ compact }) {
 }
 
 function SideMenu({ view, collapsed, onCollapse, open, onClose }) {
+  const unread = useUnreadCount();
   return (
     <aside
       className={cx(
@@ -141,8 +148,11 @@ function SideMenu({ view, collapsed, onCollapse, open, onClose }) {
                 collapsed && 'lg:justify-center lg:px-0',
               )}
             >
-              <Icon className="shrink-0" />
-              <span className={cx('truncate', collapsed && 'lg:sr-only')}>{label}</span>
+              <span className="relative shrink-0">
+                <Icon />
+                {id === 'notifications' && unread > 0 && <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full border-2 border-wa-side bg-tab-active" />}
+              </span>
+              <span className={cx('truncate', collapsed && 'lg:sr-only')}>{label}{id === 'notifications' && unread > 0 && <span className="sr-only"> ({unread} unread)</span>}</span>
             </a>
           );
         })}
@@ -276,6 +286,7 @@ export default function WebApp() {
   // The shortcuts menu opens below the grid icon, or to the left of Quick actions → More
   const [menu, setMenu] = useState(null);
   const searchRef = useRef(null);
+  const [profile] = useProfile();
   // Token, buy, deposit and withdraw pages are reached from another view, so they show Back instead of a title
   const nested = ['token', 'order', 'deposit', 'withdraw'].includes(view);
   const title = view === 'token' ? route.coin.name : view === 'order' ? `${route.side === 'buy' ? 'Buy' : 'Sell'} ${route.coin.name}` : TITLES[view];
@@ -339,12 +350,12 @@ export default function WebApp() {
             <FigmaCopyButton className="max-sm:hidden" />
           </div>
           <TokenSearch inputRef={searchRef} />
-          <a href="#notifications" className={roundBtn} aria-label="Notifications"><Bell size={22} /></a>
+          <NotificationsBell className={roundBtn} />
           <button type="button" className={roundBtn} aria-label="All shortcuts" aria-haspopup="menu" aria-expanded={Boolean(menu)} onClick={(e) => toggleMenu(e.currentTarget)}>
             <Grid size={22} />
           </button>
-          <a href="#settings" aria-label="Account settings" className="shrink-0 rounded-full">
-            <img src={avatar} alt="" width="48" height="48" className="size-12 rounded-full object-cover max-sm:size-10" />
+          <a href="#settings/profile" aria-label={`Account settings for ${fullName(profile)}`} title={fullName(profile)} className="shrink-0 rounded-full">
+            <img src={profile.avatar || avatar} alt="" width="48" height="48" className="size-12 rounded-full object-cover max-sm:size-10" />
           </a>
         </header>
 
@@ -355,8 +366,11 @@ export default function WebApp() {
           {view === 'trade' && <TradeView />}
           {view === 'deposit' && <Deposit way={route.way} step={route.step} />}
           {view === 'withdraw' && <Withdraw way={route.way} step={route.step} />}
+          {view === 'payments' && <Payments adding={route.adding} />}
+          {view === 'notifications' && <NotificationsView />}
+          {view === 'settings' && <SettingsView tab={route.tab} />}
           {view === 'order' && <Order key={`${route.side}-${route.coin.id}`} coin={route.coin} side={route.side} step={route.step} initialWallet={route.wallet} />}
-          {!['home', 'token', 'assets', 'trade', 'order', 'deposit', 'withdraw'].includes(view) && <ComingSoon view={view} />}
+          {!['home', 'token', 'assets', 'trade', 'order', 'deposit', 'withdraw', 'payments', 'settings', 'notifications'].includes(view) && <ComingSoon view={view} />}
         </main>
       </div>
 

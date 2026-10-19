@@ -20,11 +20,17 @@ export const ACTIVITIES = [
   { id: 3, type: 'Deposit', status: 'Completed', amount: 0.3289, symbol: 'BTC', usd: 20844.46 },
 ];
 
-// Saved payment accounts, as shown in the Figma buy flow. `use` is the side each one is set up for;
-// `label` is how the account reads in a sentence or a summary row.
-export const PAYMENT_METHODS = [
-  { id: 'mtn', name: 'MTN', kind: 'Mobile Money', label: 'MTN Mobile Money', holder: 'Johnathan Doe', detail: '+23305*******9033', use: 'buy' },
-  { id: 'card', name: 'Debit card', kind: 'Bank card', label: 'Debit card', holder: 'Johnathan Doe', detail: '***********', use: 'sell' },
+// Starting list of saved payment accounts (see paymentAccounts.jsx), following the Figma rows (provider, account type and the
+// placeholder name "Ken Socials"). The numbers are made up; added, edited and deleted accounts are kept in this browser.
+export const SAMPLE_PAYMENT_ACCOUNTS = [
+  { id: 'pm-1', provider: 'mtn', number: '0232023202', holder: 'Ken Socials', type: 'sell' },
+  { id: 'pm-2', provider: 'telecel', number: '0201234567', holder: 'Ken Socials', type: 'buy' },
+  { id: 'pm-3', provider: 'at', number: '0271234567', holder: 'Ken Socials', type: 'both' },
+  { id: 'pm-4', provider: 'mtn', number: '0241234567', holder: 'Ken Socials', type: 'sell' },
+  { id: 'pm-5', provider: 'at', number: '0261234567', holder: 'Ken Socials', type: 'both' },
+  { id: 'pm-6', provider: 'mtn', number: '0551234567', holder: 'Ken Socials', type: 'sell' },
+  { id: 'pm-7', provider: 'telecel', number: '0501234567', holder: 'Ken Socials', type: 'buy' },
+  { id: 'pm-8', provider: 'at', number: '0571234567', holder: 'Ken Socials', type: 'both' },
 ];
 
 // Sample deposit addresses, one per network. Each is malformed on purpose (wrong characters, no valid checksum)
@@ -98,3 +104,25 @@ export function balanceBars(period, now = Date.now()) {
     return { time, value, up: value >= values[i], label: (p.bars - 1 - i) % p.every === 0 ? format.format(time) : '' };
   });
 }
+
+// Sample profile and settings for the Settings page. The name matches the sample payment holder used before;
+// the email is a placeholder. All of it lives in this browser until there is an account backend.
+export const SAMPLE_PROFILE = {
+  firstName: 'Johnathan',
+  lastName: 'Doe',
+  email: 'johnathan.doe@example.com',
+  avatar: null,
+  country: 'GH',
+  city: '',
+  state: '',
+  street: '',
+  zip: '',
+};
+
+// As in the Figma: the authenticator is on, email and text-message codes are off
+export const SAMPLE_SECURITY = { authenticator: true, authenticatorSecret: null, email: false, phone: false, phoneNumber: '' };
+
+// As in the Figma: withdrawal and trade alerts on, incoming funds and login alerts off
+export const SAMPLE_ALERTS = { incoming: false, withdrawal: true, trades: true, login: false };
+
+export const SAMPLE_VERIFICATION = { email: 'verified', phone: 'none', identity: 'none', document: null };

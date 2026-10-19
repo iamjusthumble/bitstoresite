@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { formatPrice, useMarketData } from '../marketData.js';
 import successArt from '../assets/wa-buy/success.svg';
 import { cx } from '../ui.js';
-import { HOLDINGS, ORDER_FEE_RATE, PAYMENT_METHODS } from './demoData.js';
-import { AddressEntry, AmountEntry, FieldError, MethodIcon, Modal, Radio, Row, Section, bigOutline, bigPrimary, cents, chip, choice, dash, field, fieldBorder, formatQty, shorten, sideTab, useAddressEntry, useAmountEntry } from './flow.jsx';
+import { HOLDINGS, ORDER_FEE_RATE } from './demoData.js';
+import { AddressEntry, AmountEntry, FieldError, Modal, Radio, Row, Section, bigOutline, bigPrimary, cents, chip, choice, dash, field, fieldBorder, formatQty, shorten, sideTab, useAddressEntry, useAmountEntry } from './flow.jsx';
 import { Alert, ChevronDown, Plus } from './icons.jsx';
 import { networkLabel } from './networks.js';
+import { ProviderLogo, TypeTag, accountLabel, canUse, maskNumber, usePaymentAccounts } from './paymentAccounts.jsx';
 import { TokenSwitcher, WALLETS, card, cardTitle, skeleton, tokenHref, tradeHref } from './parts.jsx';
 
 const QUICK_AMOUNTS = [50, 100, 250, 500];
@@ -41,12 +42,12 @@ const COPY = {
 const methodRow = 'flex w-full items-start gap-3 rounded-xl border border-wa-line p-4 text-left transition-colors duration-150';
 
 // Saved payment accounts open in their own dialog; accounts set up for the other side are listed but can't be picked
-function MethodPicker({ side, selected, otherUse, onPick, onClose }) {
+function MethodPicker({ accounts, side, selected, otherUse, onPick, onClose }) {
   return (
     <Modal labelledBy="wa-order-methods" onClose={onClose} className="max-w-[550px]">
       <h3 id="wa-order-methods" className={cx(cardTitle, 'pr-10')}>Payment methods</h3>
 
-      <a href="#payments" className="mt-5 flex items-center gap-3 rounded-2xl border border-wa-line bg-wa-pill/45 p-4 transition-colors duration-150 hover:border-tab-active hover:bg-wa-pill">
+      <a href="#payments/add" className="mt-5 flex items-center gap-3 rounded-2xl border border-wa-line bg-wa-pill/45 p-4 transition-colors duration-150 hover:border-tab-active hover:bg-wa-pill">
         <span className="grid size-7 shrink-0 place-items-center rounded-full bg-tab-active text-white"><Plus size={16} /></span>
         <span className="min-w-0 flex-1">
           <span className="block text-base font-medium leading-5 text-wa-text">Add new account</span>
@@ -56,8 +57,8 @@ function MethodPicker({ side, selected, otherUse, onPick, onClose }) {
 
       <h4 className="mt-6 text-base font-bold leading-6 text-wa-text">Saved accounts</h4>
       <ul className="mt-3 grid gap-3">
-        {PAYMENT_METHODS.map((m) => {
-          const enabled = m.use === side;
+        {accounts.map((m) => {
+          const enabled = canUse(m, side);
           return (
             <li key={m.id}>
               <button
@@ -67,18 +68,19 @@ function MethodPicker({ side, selected, otherUse, onPick, onClose }) {
                 onClick={() => onPick(m.id)}
                 className={cx(methodRow, enabled ? 'hover:bg-wa-pill/50 aria-pressed:border-tab-active aria-pressed:bg-tab-active/10' : 'cursor-not-allowed opacity-55')}
               >
-                <MethodIcon id={m.id} />
+                <ProviderLogo id={m.provider} />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] font-semibold leading-5 text-wa-text">{m.name} <span className="font-normal text-wa-muted">{m.kind}</span></span>
+                  <span className="block text-[15px] font-semibold leading-5 text-wa-text">{accountLabel(m)}</span>
                   <span className="mt-1 block truncate text-sm leading-5 text-wa-muted">{m.holder}</span>
-                  <span className="block truncate text-sm leading-5 text-wa-muted tabular-nums">{enabled ? m.detail : otherUse}</span>
+                  <span className="block truncate text-sm leading-5 text-wa-muted tabular-nums">{enabled ? maskNumber(m.number) : otherUse}</span>
                 </span>
-                <span className="shrink-0 rounded-lg bg-tab-active/12 px-2.5 py-1 text-xs font-semibold capitalize leading-4 text-wa-accent">{m.use}</span>
+                <TypeTag id={m.type} />
               </button>
             </li>
           );
         })}
       </ul>
+      {!accounts.length && <p className="mt-3 text-sm leading-5 text-wa-muted">No saved accounts yet.</p>}
     </Modal>
   );
 }
@@ -87,7 +89,8 @@ export default function Order({ coin, side, step, initialWallet }) {
   const { status, coins } = useMarketData();
   const buying = side === 'buy';
   const copy = COPY[side];
-  const usable = PAYMENT_METHODS.filter((m) => m.use === side);
+  const [accounts] = usePaymentAccounts();
+  const usable = accounts.filter((m) => canUse(m, side));
   const href = (part) => tradeHref(coin, side, part);
 
   const [walletKey, setWalletKey] = useState(initialWallet || 'mybitstore');
@@ -104,7 +107,7 @@ export default function Order({ coin, side, step, initialWallet }) {
   const sectionNo = (n) => (buying ? n : n - 1);
 
   const price = coins[coin.id]?.price;
-  const method = PAYMENT_METHODS.find((m) => m.id === methodId);
+  const method = accounts.find((m) => m.id === methodId);
   const entry = useAddressEntry(coin, needsAddress, attempted);
   const { network, address, addressOk } = entry;
   const amt = useAmountEntry(price);
@@ -160,7 +163,7 @@ export default function Order({ coin, side, step, initialWallet }) {
   };
 
   const rate = price ? `1 ${coin.symbol} = ${formatPrice(price)}` : null;
-  const methodName = method ? method.label : '';
+  const methodName = method ? accountLabel(method) : '';
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
@@ -249,10 +252,10 @@ export default function Order({ coin, side, step, initialWallet }) {
             >
               {method ? (
                 <>
-                  <MethodIcon id={method.id} />
+                  <ProviderLogo id={method.provider} />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-semibold leading-5 text-wa-text">{method.name} <span className="font-normal text-wa-muted">{method.kind}</span></span>
-                    <span className="mt-0.5 block truncate text-sm leading-5 text-wa-muted tabular-nums">{method.holder} · {method.detail}</span>
+                    <span className="block text-[15px] font-semibold leading-5 text-wa-text">{accountLabel(method)}</span>
+                    <span className="mt-0.5 block truncate text-sm leading-5 text-wa-muted tabular-nums">{method.holder} · {maskNumber(method.number)}</span>
                   </span>
                 </>
               ) : (
@@ -299,6 +302,7 @@ export default function Order({ coin, side, step, initialWallet }) {
 
       {picking && (
         <MethodPicker
+          accounts={accounts}
           side={side}
           selected={methodId}
           otherUse={copy.otherUse}
@@ -345,7 +349,7 @@ export default function Order({ coin, side, step, initialWallet }) {
             <Row label={buying ? 'Amount' : 'Value'}>{formatPrice(usd)}</Row>
             <Row label="Exchange rate">{rate}</Row>
             <Row label={`Fee (${ORDER_FEE_RATE * 100}%)`}>{formatPrice(fee)}</Row>
-            <Row label={buying ? 'Pay with' : 'Paid to'}>{methodName} · {method.detail}</Row>
+            <Row label={buying ? 'Pay with' : 'Paid to'}>{methodName} · {maskNumber(method.number)}</Row>
           </dl>
 
           {needsAddress ? (
@@ -375,7 +379,7 @@ export default function Order({ coin, side, step, initialWallet }) {
             {receipt.wallet && <Row label="To">{receipt.wallet.name}</Row>}
             {receipt.address && <Row label="Address"><span className="font-mono" title={receipt.address}>{shorten(receipt.address)}</span></Row>}
             {receipt.network && <Row label="Network">{networkLabel(receipt.network)}</Row>}
-            <Row label={buying ? 'Paid with' : 'Paid to'}>{receipt.method.label}</Row>
+            <Row label={buying ? 'Paid with' : 'Paid to'}>{accountLabel(receipt.method)}</Row>
             <Row label={buying ? 'Total paid' : 'You receive'}>{formatPrice(receipt.total)}</Row>
           </dl>
           <p className="mt-3 text-xs leading-4 text-wa-muted">Preview only: no payment was taken and no crypto was moved.</p>

@@ -47,6 +47,15 @@ export const SwapVertical = icon(<path d="M8 4v16m0 0-3.5-3.5M8 20l3.5-3.5M16 20
 export const Plus = icon(<path d="M12 5v14M5 12h14" />);
 export const Close = icon(<path d="M6 6l12 12M18 6 6 18" />);
 export const Trash = icon(<path d="M4.5 7h15M10 7V4.5h4V7M6.5 7l.8 12a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-12M10 11v5.5M14 11v5.5" />);
+export const Edit = icon(<path d="M13.3 5.7 6 13l-1 5 5-1 7.3-7.3M13.3 5.7l1.9-1.9a1.5 1.5 0 0 1 2.1 0l1.9 1.9a1.5 1.5 0 0 1 0 2.1l-1.9 1.9M13.3 5.7l4 4M4 21h16" />);
+export const MoreVertical = icon(<path d="M12 5.5h.01M12 12h.01M12 18.5h.01" strokeWidth="2.5" />);
+export const ChevronUpDown = icon(<path d="m8 9.5 4-4 4 4M8 14.5l4 4 4-4" />);
+export const Shield = icon(<><path d="M12 3 5 5.8v5.4c0 4.4 3 8.2 7 9.8 4-1.6 7-5.4 7-9.8V5.8L12 3Z" /><circle cx="12" cy="10.5" r="1.8" /><path d="M12 12.3v2.7" /></>);
+export const Info = icon(<><circle cx="12" cy="12" r="9" /><path d="M12 8v4.5M12 16h.01" /></>);
+export const Mail = icon(<><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="m4 7 8 6 8-6" /></>);
+export const Phone = icon(<><rect x="6.5" y="2.5" width="11" height="19" rx="2.5" /><path d="M10.5 18.5h3" /></>);
+export const IdCard = icon(<><rect x="2.5" y="5" width="19" height="14" rx="2.5" /><circle cx="8.5" cy="11" r="2" /><path d="M5.5 16c.5-1.5 1.6-2.3 3-2.3s2.5.8 3 2.3M14 10h4.5M14 13.5h3" /></>);
+export const Upload = icon(<path d="M12 15.5V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v2.5A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5V15" />);
 export const ExternalLink = icon(<path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" />);
 
 // Solid triangle used beside percentage changes

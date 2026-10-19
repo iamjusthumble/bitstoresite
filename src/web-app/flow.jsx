@@ -1,13 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import qrcode from 'qrcode-generator';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { formatPrice } from '../marketData.js';
-import cardIcon from '../assets/wa-buy/card.svg';
-import mtnLogo from '../assets/wa-buy/mtn.png';
 import { cx } from '../ui.js';
-import { PAYMENT_METHODS } from './demoData.js';
 import { FigmaCopyButton } from './figmaCopy.jsx';
 import { useStored } from './format.jsx';
 import { Book, Check, ChevronDown, Clipboard, Close, Plus, Search, SwapVertical, Trash } from './icons.jsx';
 import { NETWORKS, networkLabel, networksFor } from './networks.js';
+import { ProviderLogo, accountLabel, canUse, maskNumber, typeById } from './paymentAccounts.jsx';
 import { card, cardTitle, skeleton } from './parts.jsx';
 
 // Class sets, fields and dialogs shared by the money flows: buy, sell and deposit
@@ -104,22 +103,6 @@ export function AddressBook({ entries, networks, onPick, onRemove }) {
   );
 }
 
-export function MethodIcon({ id }) {
-  // Crop and sizes follow the Figma: a 28px disc with the logo zoomed to fill it
-  if (id === 'mtn') {
-    return (
-      <span className="relative size-7 shrink-0 overflow-hidden rounded-full bg-white">
-        <img src={mtnLogo} alt="" className="absolute left-[-41.67%] top-[-1.56%] h-[103.12%] w-[183.33%] max-w-none" />
-      </span>
-    );
-  }
-  return (
-    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#e7edf7]">
-      <img src={cardIcon} alt="" width="16" height="16" />
-    </span>
-  );
-}
-
 export const Radio = ({ checked }) => (
   <span className={cx('mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border', checked ? 'border-tab-active bg-tab-active text-white' : 'border-wa-line text-transparent')}>
     <Check size={12} />
@@ -176,6 +159,53 @@ export function Modal({ labelledBy, onClose, className, children }) {
         {children}
       </div>
     </dialog>
+  );
+}
+
+export function QrCode({ value, label, size = 176 }) {
+  const { count, path } = useMemo(() => {
+    const qr = qrcode(0, 'M');
+    qr.addData(value);
+    qr.make();
+    const n = qr.getModuleCount();
+    let d = '';
+    for (let row = 0; row < n; row += 1) for (let col = 0; col < n; col += 1) if (qr.isDark(row, col)) d += `M${col} ${row}h1v1h-1z`;
+    return { count: n, path: d };
+  }, [value]);
+  // Always dark on white, whatever the theme, so cameras can read it
+  return (
+    <svg viewBox={`-2 -2 ${count + 4} ${count + 4}`} width={size} height={size} role="img" aria-label={label} shapeRendering="crispEdges" className="mx-auto block rounded-2xl bg-white">
+      <path d={path} fill="#0a1024" />
+    </svg>
+  );
+}
+
+// Outlined pill tabs (the Payment methods filters and the Settings sections): pressed buttons or current-page links
+export const pillTab =
+  'inline-flex h-10 items-center rounded-full border-2 border-transparent px-6 text-sm font-semibold leading-6 tracking-[-0.14px] text-wa-muted transition-colors duration-150 hover:text-wa-text aria-pressed:border-tab-active aria-pressed:text-wa-text aria-[current=page]:border-tab-active aria-[current=page]:text-wa-text max-sm:px-4';
+
+// Buttons used side by side at the foot of dialogs (Cancel, then the action)
+export const formBtn = 'inline-flex h-[50px] items-center justify-center gap-2 rounded-full px-3 text-base font-semibold leading-6 transition-colors duration-150 disabled:pointer-events-none disabled:opacity-50';
+export const cancelBtn = cx(formBtn, 'border border-wa-line text-wa-text hover:bg-wa-pill');
+export const primaryBtn = cx(formBtn, 'bg-tab-active text-white hover:bg-brand-strong');
+export const dangerBtn = cx(formBtn, 'bg-[#da5151] text-white hover:bg-[#c43f3f]');
+
+// A short centred dialog: an icon in a tinted disc, a title, a line or two, then its buttons.
+// `tone` tints the disc: danger (red), brand (blue) or good (green)
+const TONES = { danger: 'bg-[rgba(241,176,176,0.3)] text-down', brand: 'bg-tab-active/15 text-wa-accent', good: 'bg-up/15 text-up' };
+
+export function NoticeDialog({ id, icon: Icon, tone = 'danger', title, children, onClose, actions }) {
+  return (
+    <Modal labelledBy={id} onClose={onClose} className="max-w-[380px]">
+      <div className="text-center">
+        <span className={cx('mx-auto grid size-[50px] place-items-center rounded-full', TONES[tone])}>
+          <Icon size={24} />
+        </span>
+        <h3 id={id} className="mx-auto mt-5 max-w-[280px] text-2xl font-bold leading-7 text-wa-text">{title}</h3>
+        <div className="mx-auto mt-2.5 max-w-[280px] text-base leading-5 text-wa-muted">{children}</div>
+      </div>
+      <div className={cx('mt-6 grid gap-3.5', actions.length > 1 && 'grid-cols-2')}>{actions}</div>
+    </Modal>
   );
 }
 
@@ -494,33 +524,39 @@ export function CoinChoice({ coins, coinId, onPick, detail = (coin) => coin.name
   );
 }
 
-// Saved payment accounts as cards. `use` is the side being paid (buy) or paid out (sell);
-// accounts set up for the other side are shown but can't be picked.
-export function MethodChoice({ use, methodId, onPick, error }) {
+// Saved payment accounts as cards: only those set up for `use`, the side being paid (buy) or paid out (sell)
+export function MethodChoice({ accounts, use, methodId, onPick, error }) {
+  const usable = accounts.filter((m) => canUse(m, use));
   return (
     <>
-      <div role="radiogroup" aria-label="Payment account" className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-3 max-md:grid-cols-[minmax(0,1fr)]">
-        {PAYMENT_METHODS.map((m, i) => {
-          const enabled = m.use === use;
-          return (
-            <label key={m.id} className={cx(choice, 'items-start', enabled ? 'cursor-pointer hover:bg-wa-pill/50' : 'cursor-not-allowed opacity-55')}>
-              <input type="radio" name="wa-order-method" id={i === 0 ? 'wa-order-method' : undefined} className="sr-only" disabled={!enabled} checked={methodId === m.id} onChange={() => onPick(m.id)} />
-              <MethodIcon id={m.id} />
+      {usable.length ? (
+        <div role="radiogroup" aria-label="Payment account" className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-3 max-md:grid-cols-[minmax(0,1fr)]">
+          {usable.map((m, i) => (
+            <label key={m.id} className={cx(choice, 'cursor-pointer items-start hover:bg-wa-pill/50')}>
+              <input type="radio" name="wa-order-method" id={i === 0 ? 'wa-order-method' : undefined} className="sr-only" checked={methodId === m.id} onChange={() => onPick(m.id)} />
+              <ProviderLogo id={m.provider} />
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold leading-5 text-wa-text">{m.name} <span className="font-normal text-wa-muted">{m.kind}</span></span>
+                <span className="block text-[15px] font-semibold leading-5 text-wa-text">{accountLabel(m)} <span className="font-normal text-wa-muted">{typeById[m.type].tag}</span></span>
                 <span className="mt-1 block truncate text-sm leading-5 text-wa-muted">{m.holder}</span>
-                <span className="block truncate text-sm leading-5 text-wa-muted tabular-nums">{enabled ? m.detail : use === 'buy' ? 'Set up for selling only' : 'Set up for buying only'}</span>
+                <span className="block truncate text-sm leading-5 text-wa-muted tabular-nums">{maskNumber(m.number)}</span>
               </span>
               <Radio checked={methodId === m.id} />
             </label>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p id="wa-order-method" tabIndex={-1} className="rounded-2xl border border-dashed border-wa-line px-4 py-5 text-sm leading-5 text-wa-muted">
+          You have no account set up for {use === 'buy' ? 'paying' : 'receiving money'} yet.
+        </p>
+      )}
       <FieldError>{error}</FieldError>
-      <a href="#payments" className="mt-4 inline-flex items-center gap-2 rounded-md text-[15px] font-bold leading-6 text-wa-accent hover:underline">
-        <Plus size={16} />
-        Add or manage payment accounts
-      </a>
+      <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+        <a href="#payments/add" className="inline-flex items-center gap-2 rounded-md text-[15px] font-bold leading-6 text-wa-accent hover:underline">
+          <Plus size={16} />
+          Add a payment account
+        </a>
+        <a href="#payments" className="inline-flex items-center rounded-md text-[15px] font-bold leading-6 text-wa-muted hover:text-wa-text hover:underline">Manage accounts</a>
+      </div>
     </>
   );
 }

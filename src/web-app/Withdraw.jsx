@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { COINS, formatPrice, useMarketData } from '../marketData.js';
 import successArt from '../assets/wa-buy/success.svg';
 import { cx } from '../ui.js';
-import { HOLDINGS, ORDER_FEE_RATE, PAYMENT_METHODS } from './demoData.js';
+import { HOLDINGS, ORDER_FEE_RATE } from './demoData.js';
 import { AddressEntry, AmountEntry, CoinChoice, FieldError, MethodChoice, Modal, Row, Section, bigOutline, bigPrimary, cents, chip, dash, field, fieldBorder, formatQty, shorten, sideTab, useAddressEntry, useAmountEntry } from './flow.jsx';
+import { accountLabel, canUse, maskNumber, usePaymentAccounts } from './paymentAccounts.jsx';
 import { Alert, Clipboard, Withdraw as WithdrawIcon } from './icons.jsx';
 import { networkLabel } from './networks.js';
 import { card, cardTitle, coinById } from './parts.jsx';
@@ -58,7 +59,8 @@ export default function Withdraw({ way, step }) {
   const toWallet = way === 'wallet';
   const toUser = way === 'user';
   const toFiat = way === 'fiat';
-  const payouts = PAYMENT_METHODS.filter((m) => m.use === 'sell');
+  const [accounts] = usePaymentAccounts();
+  const payouts = accounts.filter((m) => canUse(m, 'sell'));
 
   const [coinId, setCoinId] = useState((HELD[0] || COINS[0]).id);
   const [recipient, setRecipient] = useState('');
@@ -74,7 +76,7 @@ export default function Withdraw({ way, step }) {
   const { network, address, addressOk } = entry;
   const amt = useAmountEntry(price);
   const { mode, entered, usd, qty, quoted, setUsd } = amt;
-  const method = PAYMENT_METHODS.find((m) => m.id === methodId);
+  const method = accounts.find((m) => m.id === methodId);
   const recipientKind = readRecipient(recipient, entry.networks);
   // The fee comes out of the amount withdrawn, so Max never asks for more than the balance
   const fee = usd * ORDER_FEE_RATE;
@@ -145,7 +147,7 @@ export default function Withdraw({ way, step }) {
   };
 
   const rate = price ? `1 ${coin.symbol} = ${formatPrice(price)}` : null;
-  const methodName = method ? method.label : '';
+  const methodName = method ? accountLabel(method) : '';
   const showRecipientError = attempted && errors.recipient;
   const receives = toFiat ? formatPrice(net) : formatQty(netQty, coin);
 
@@ -230,7 +232,7 @@ export default function Withdraw({ way, step }) {
 
           {toFiat && (
             <Section number={3} title="Where should we send your money?">
-              <MethodChoice use="sell" methodId={methodId} onPick={setMethodId} error={attempted && errors.method} />
+              <MethodChoice accounts={accounts} use="sell" methodId={methodId} onPick={setMethodId} error={attempted && errors.method} />
             </Section>
           )}
         </div>
@@ -309,7 +311,7 @@ export default function Withdraw({ way, step }) {
             <Row label="Withdrawal amount">{formatPrice(usd)}</Row>
             <Row label="Exchange rate">{rate}</Row>
             <Row label={`Fee (${ORDER_FEE_RATE * 100}%)`}>{formatPrice(fee)}</Row>
-            {toFiat && <Row label="Payment method">{methodName} · {method.detail}</Row>}
+            {toFiat && <Row label="Payment method">{methodName} · {maskNumber(method.number)}</Row>}
           </dl>
 
           {toFiat ? (
@@ -340,7 +342,7 @@ export default function Withdraw({ way, step }) {
             {receipt.way === 'wallet' && <Row label="Address"><span className="font-mono" title={receipt.address}>{shorten(receipt.address)}</span></Row>}
             {receipt.way === 'wallet' && <Row label="Network">{networkLabel(receipt.network)}</Row>}
             {receipt.way === 'user' && <Row label="To"><span title={receipt.recipient}>{shorten(receipt.recipient)}</span></Row>}
-            {receipt.way === 'fiat' && <Row label="Paid to">{receipt.method.label}</Row>}
+            {receipt.way === 'fiat' && <Row label="Paid to">{accountLabel(receipt.method)}</Row>}
             <Row label={WAYS[receipt.way].receives}>{receipt.way === 'fiat' ? formatPrice(receipt.net) : formatQty(receipt.netQty, receipt.coin)}</Row>
           </dl>
           <p className="mt-3 text-xs leading-4 text-wa-muted">Preview only: nothing was withdrawn and no crypto was moved.</p>

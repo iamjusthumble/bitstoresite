@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { formatPrice } from '../marketData.js';
 
 // Dollar amount with the cents toned down, or dots when balances are hidden
@@ -13,7 +13,10 @@ export function Money({ value, hidden = false }) {
   );
 }
 
-// useState that remembers its value in localStorage (falls back to memory if storage is blocked)
+// useState that remembers its value in localStorage (falls back to memory if storage is blocked).
+// Every component using the same key stays in step, so a change made in one view shows everywhere at once.
+const storeListeners = new Map();
+
 export function useStored(key, initial) {
   const [value, setValue] = useState(() => {
     try {
@@ -23,6 +26,14 @@ export function useStored(key, initial) {
       return initial;
     }
   });
+
+  useEffect(() => {
+    if (!storeListeners.has(key)) storeListeners.set(key, new Set());
+    const listeners = storeListeners.get(key);
+    listeners.add(setValue);
+    return () => listeners.delete(setValue);
+  }, [key]);
+
   const update = useCallback(
     (next) =>
       setValue((current) => {
@@ -32,6 +43,8 @@ export function useStored(key, initial) {
         } catch {
           // Storage can be unavailable (private mode); the value still applies for this visit
         }
+        // Tell the other components on this key, after this render
+        queueMicrotask(() => storeListeners.get(key)?.forEach((set) => set !== setValue && set(resolved)));
         return resolved;
       }),
     [key],

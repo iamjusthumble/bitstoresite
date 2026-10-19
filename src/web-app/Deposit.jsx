@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import qrcode from 'qrcode-generator';
 import { COINS, formatPrice, useMarketData } from '../marketData.js';
 import successArt from '../assets/wa-buy/success.svg';
 import { cx } from '../ui.js';
-import { DEPOSIT_ADDRESSES, ORDER_FEE_RATE, PAYMENT_METHODS } from './demoData.js';
-import { AddressEntry, AmountEntry, CoinChoice, MethodChoice, Modal, NetworkChoice, Radio, Row, Section, bigOutline, bigPrimary, chip, choice, dash, formatQty, shorten, sideTab, useAddressEntry, useAmountEntry } from './flow.jsx';
+import { DEPOSIT_ADDRESSES, ORDER_FEE_RATE } from './demoData.js';
+import { AddressEntry, AmountEntry, CoinChoice, MethodChoice, Modal, NetworkChoice, QrCode, Radio, Row, Section, bigOutline, bigPrimary, chip, choice, dash, formatQty, shorten, sideTab, useAddressEntry, useAmountEntry } from './flow.jsx';
+import { accountLabel, maskNumber, usePaymentAccounts } from './paymentAccounts.jsx';
 import { Alert, Check, Clipboard, Deposit as DepositIcon } from './icons.jsx';
 import { networkLabel } from './networks.js';
 import { card, cardTitle, coinById } from './parts.jsx';
@@ -36,24 +36,6 @@ const WAYS = {
 // #deposit for crypto, #deposit/fiat for fiat, each optionally followed by a step
 export const depositHref = (way = 'crypto', step) => `#deposit${way === 'crypto' && !step ? '' : '/' + way}${step ? '/' + step : ''}`;
 
-function QrCode({ value }) {
-  const { count, path } = useMemo(() => {
-    const qr = qrcode(0, 'M');
-    qr.addData(value);
-    qr.make();
-    const n = qr.getModuleCount();
-    let d = '';
-    for (let row = 0; row < n; row += 1) for (let col = 0; col < n; col += 1) if (qr.isDark(row, col)) d += `M${col} ${row}h1v1h-1z`;
-    return { count: n, path: d };
-  }, [value]);
-  // Always dark on white, whatever the theme, so cameras can read it
-  return (
-    <svg viewBox={`-2 -2 ${count + 4} ${count + 4}`} width="176" height="176" role="img" aria-label="QR code for the deposit address" shapeRendering="crispEdges" className="mx-auto block rounded-2xl bg-white">
-      <path d={path} fill="#0a1024" />
-    </svg>
-  );
-}
-
 export default function Deposit({ way, step }) {
   const { status, coins } = useMarketData();
   const fiat = way === 'fiat';
@@ -61,6 +43,7 @@ export default function Deposit({ way, step }) {
 
   const [coinId, setCoinId] = useState(COINS[0].id);
   const [purposeId, setPurposeId] = useState(PURPOSES[0].id);
+  const [accounts] = usePaymentAccounts();
   const [methodId, setMethodId] = useState(null);
   const [attempted, setAttempted] = useState(false);
   const [receipt, setReceipt] = useState(null);
@@ -73,7 +56,7 @@ export default function Deposit({ way, step }) {
   const { network, address, addressOk } = entry;
   const amt = useAmountEntry(price);
   const { mode, entered, usd, qty, quoted, setUsd } = amt;
-  const method = PAYMENT_METHODS.find((m) => m.id === methodId);
+  const method = accounts.find((m) => m.id === methodId);
   const fee = usd * ORDER_FEE_RATE;
   const total = usd + fee;
   const depositAddress = network ? DEPOSIT_ADDRESSES[network.id] : '';
@@ -141,7 +124,7 @@ export default function Deposit({ way, step }) {
   const share = () => (navigator.share ? navigator.share({ title: `${coin.name} deposit address`, text: depositAddress }).catch(() => {}) : copy());
 
   const rate = price ? `1 ${coin.symbol} = ${formatPrice(price)}` : null;
-  const methodName = method ? method.label : '';
+  const methodName = method ? accountLabel(method) : '';
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
@@ -205,7 +188,7 @@ export default function Deposit({ way, step }) {
 
               <Section number={4} title="How would you like to pay?">
                 {/* A deposit is paid for like a purchase, so it takes the accounts set up for buying */}
-                <MethodChoice use="buy" methodId={methodId} onPick={setMethodId} error={attempted && errors.method} />
+                <MethodChoice accounts={accounts} use="buy" methodId={methodId} onPick={setMethodId} error={attempted && errors.method} />
               </Section>
             </>
           )}
@@ -271,7 +254,7 @@ export default function Deposit({ way, step }) {
           </p>
           <p className="mx-auto mt-4 max-w-[360px] text-center text-sm leading-5 text-wa-muted">Send your {coin.symbol} to the address below, or scan the QR code with the wallet you’re sending from.</p>
 
-          <div className="mt-5"><QrCode value={depositAddress} /></div>
+          <div className="mt-5"><QrCode value={depositAddress} label="QR code for the deposit address" /></div>
 
           <p className="mt-6 text-sm font-semibold leading-5 text-wa-text">{networkLabel(network)} deposit address</p>
           <div className="mt-2 flex items-center gap-2 rounded-2xl border border-wa-line bg-wa-inset py-2 pl-4 pr-2">
@@ -326,7 +309,7 @@ export default function Deposit({ way, step }) {
             <Row label="Amount">{formatPrice(usd)}</Row>
             <Row label="Exchange rate">{rate}</Row>
             <Row label={`Fee (${ORDER_FEE_RATE * 100}%)`}>{formatPrice(fee)}</Row>
-            <Row label="Payment method">{methodName} · {method.detail}</Row>
+            <Row label="Payment method">{methodName} · {maskNumber(method.number)}</Row>
           </dl>
 
           <p className="mt-6 flex gap-3 rounded-2xl border border-wa-warn/40 bg-wa-warn/10 p-4 text-sm leading-5 text-wa-text">
@@ -351,7 +334,7 @@ export default function Deposit({ way, step }) {
             <Row label="You receive about">{formatQty(receipt.qty, receipt.coin)}</Row>
             <Row label="Address"><span className="font-mono" title={receipt.address}>{shorten(receipt.address)}</span></Row>
             <Row label="Network">{networkLabel(receipt.network)}</Row>
-            <Row label="Payment method">{receipt.method.label}</Row>
+            <Row label="Payment method">{accountLabel(receipt.method)}</Row>
             <Row label="Total to pay">{formatPrice(receipt.total)}</Row>
           </dl>
           <p className="mt-3 text-xs leading-4 text-wa-muted">Preview only: no payment was taken and no crypto was moved.</p>
