@@ -12,6 +12,7 @@ import Home from './Home.jsx';
 import Deposit from './Deposit.jsx';
 import Order from './Order.jsx';
 import Payments from './Payments.jsx';
+import Referral from './Referral.jsx';
 import NotificationsView, { NotificationsBell, useUnreadCount } from './Notifications.jsx';
 import SettingsView, { SETTINGS_TABS } from './Settings.jsx';
 import { fullName, useProfile } from './account.js';
@@ -33,7 +34,7 @@ const NAV = [
   ['notifications', 'Notifications', Bell],
   ['settings', 'Settings', Settings],
 ];
-const TITLES = { ...Object.fromEntries(NAV.map(([id, label]) => [id, label])), trade: 'Buy & sell', activity: 'Activity', deposit: 'Deposit', withdraw: 'Withdraw' };
+const TITLES = { ...Object.fromEntries(NAV.map(([id, label]) => [id, label])), trade: 'Buy & sell', activity: 'Activity', referral: 'Referrals', deposit: 'Deposit', withdraw: 'Withdraw' };
 
 // Routes live in the URL hash: #home, #assets, … #token/eth for a coin's details, and #buy/eth or #sell/eth for
 // the order page, which takes a step (#buy/eth/review, #buy/eth/done) or, when buying, a wallet (#buy/eth/external).
@@ -368,9 +369,10 @@ export default function WebApp() {
           {view === 'withdraw' && <Withdraw way={route.way} step={route.step} />}
           {view === 'payments' && <Payments adding={route.adding} />}
           {view === 'notifications' && <NotificationsView />}
+          {view === 'referral' && <Referral />}
           {view === 'settings' && <SettingsView tab={route.tab} />}
           {view === 'order' && <Order key={`${route.side}-${route.coin.id}`} coin={route.coin} side={route.side} step={route.step} initialWallet={route.wallet} />}
-          {!['home', 'token', 'assets', 'trade', 'order', 'deposit', 'withdraw', 'payments', 'settings', 'notifications'].includes(view) && <ComingSoon view={view} />}
+          {!['home', 'token', 'assets', 'trade', 'order', 'deposit', 'withdraw', 'payments', 'settings', 'notifications', 'referral'].includes(view) && <ComingSoon view={view} />}
         </main>
       </div>
 

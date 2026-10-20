@@ -56,6 +56,8 @@ export const Mail = icon(<><rect x="3" y="5" width="18" height="14" rx="2.5" /><
 export const Phone = icon(<><rect x="6.5" y="2.5" width="11" height="19" rx="2.5" /><path d="M10.5 18.5h3" /></>);
 export const IdCard = icon(<><rect x="2.5" y="5" width="19" height="14" rx="2.5" /><circle cx="8.5" cy="11" r="2" /><path d="M5.5 16c.5-1.5 1.6-2.3 3-2.3s2.5.8 3 2.3M14 10h4.5M14 13.5h3" /></>);
 export const Upload = icon(<path d="M12 15.5V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v2.5A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5V15" />);
+export const Clock = icon(<><circle cx="12" cy="12" r="9" /><path d="M12 7.5V12l3 2" /></>);
+export const Share = icon(<><circle cx="18" cy="5.5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="18.5" r="2.5" /><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1" /></>);
 export const ExternalLink = icon(<path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" />);
 
 // Solid triangle used beside percentage changes

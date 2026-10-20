@@ -126,3 +126,34 @@ export const SAMPLE_SECURITY = { authenticator: true, authenticatorSecret: null,
 export const SAMPLE_ALERTS = { incoming: false, withdrawal: true, trades: true, login: false };
 
 export const SAMPLE_VERIFICATION = { email: 'verified', phone: 'none', identity: 'none', document: null };
+
+// Sample referral programme for the Referral page. The code follows the Figma; the friends, reward amounts and
+// payout are placeholders chosen so every figure adds up (earned 300 − withdrawn 120 = 180 available).
+// Friends are shown by first name and initial only.
+export const REFERRAL_CODE = 'USERJOHNDOE';
+
+export const SAMPLE_REFERRALS = {
+  friends: [
+    { id: 'f1', name: 'Ama O.', at: '2026-03-28', status: 'active', reward: 40 },
+    { id: 'f2', name: 'Kofi M.', at: '2026-04-12', status: 'active', reward: 60 },
+    { id: 'f3', name: 'Esi B.', at: '2026-04-30', status: 'active', reward: 35 },
+    { id: 'f4', name: 'Yaw A.', at: '2026-05-16', status: 'active', reward: 80 },
+    { id: 'f5', name: 'Akosua D.', at: '2026-06-05', status: 'active', reward: 55 },
+    { id: 'f6', name: 'Kwame A.', at: '2026-06-27', status: 'active', reward: 30 },
+    { id: 'f7', name: 'Abena O.', at: '2026-09-21', status: 'joined', reward: 10 },
+    { id: 'f8', name: 'Kojo A.', at: '2026-10-08', status: 'joined', reward: 10 },
+    { id: 'f9', name: 'efua@example.com', at: '2026-10-15', status: 'invited', reward: 0 },
+  ],
+  transactions: [
+    { id: 't7', at: '2026-07-01', type: 'reward', amount: 30, friend: 'Kwame A.', status: 'completed' },
+    { id: 't6', at: '2026-06-09', type: 'reward', amount: 55, friend: 'Akosua D.', status: 'completed' },
+    { id: 't5', at: '2026-05-25', type: 'withdrawal', amount: 120, account: 'pm-1', method: 'MTN MoMo · 023 ••• 3202', status: 'completed' },
+    { id: 't4', at: '2026-05-20', type: 'reward', amount: 80, friend: 'Yaw A.', status: 'completed' },
+    { id: 't3', at: '2026-05-03', type: 'reward', amount: 35, friend: 'Esi B.', status: 'completed' },
+    { id: 't2', at: '2026-04-18', type: 'reward', amount: 60, friend: 'Kofi M.', status: 'completed' },
+    { id: 't1', at: '2026-04-02', type: 'reward', amount: 40, friend: 'Ama O.', status: 'completed' },
+  ],
+};
+
+// From the Figma: "Minimum withdrawal amount is $100"
+export const REFERRAL_MIN_WITHDRAWAL = 100;

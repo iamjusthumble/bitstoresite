@@ -1,0 +1,1 @@
+import{d as e,o as t,r as n}from"./ui-DtrS7ioE.js";e();var r=t();function i({dark:e,light:t,className:i,...a}){return(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)(`img`,{src:e,alt:``,className:n(i,`light:hidden!`),...a}),(0,r.jsx)(`img`,{src:t,alt:``,className:n(i,`dark:hidden!`),...a})]})}export{i as t};
