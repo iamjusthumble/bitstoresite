@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import bellBlue from '../assets/wa-notifications/bell-blue.svg';
 import bellRed from '../assets/wa-notifications/bell-red.svg';
 import coins from '../assets/wa-notifications/coins.svg';
+import giftIcon from '../assets/wa-menu/gift.svg';
 import { cx } from '../ui.js';
 import { pillTab } from './flow.jsx';
 import { useStored } from './format.jsx';
@@ -18,6 +19,7 @@ const KINDS = {
   trade: { title: 'Trade Confirmation', icon: bellBlue, tint: 'bg-[#d8f0ff]', filter: 'trading' },
   security: { title: 'Security Alert', icon: bellBlue, tint: 'bg-[#d8f0ff]', filter: 'account' },
   account: { title: 'Account Update', icon: bellBlue, tint: 'bg-[#d8f0ff]', filter: 'account' },
+  giftcard: { title: 'Gift Cards', icon: giftIcon, tint: 'bg-[#efe4ff]', filter: 'trading' },
 };
 
 const FILTERS = [['all', 'All'], ['market', 'Market news'], ['trading', 'Trading'], ['account', 'Account activity']];

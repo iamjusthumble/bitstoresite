@@ -7,7 +7,8 @@ import { DownloadButton } from '../components/Hero.jsx';
 import AppDownload from '../components/AppDownload.jsx';
 import ctaPhoto from '../assets/gift-cta-photo.jpg';
 import { links } from '../links.js';
-import { useReveal } from '../reveal.js';
+import { showAllForCapture, useReveal } from '../reveal.js';
+import { FigmaCopyButton, useFigmaShortcut } from '../web-app/figmaCopy.jsx';
 import { btn, btnArrow, cx, section, text } from '../ui.js';
 import { PREVIEW_TESTIMONIALS, TESTIMONIALS } from './testimonials.js';
 import logo from '../assets/logo.svg';
@@ -34,16 +35,34 @@ const Icon = {
   eye: (s = 14) => <svg width={s} height={s} viewBox="0 0 24 24" {...stroke}><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>,
 };
 
+// Real gift card faces (the same art the web app uses, in src/assets/gift-cards)
+const ART = Object.fromEntries(
+  Object.entries(import.meta.glob('../assets/gift-cards/*.webp', { eager: true, import: 'default' })).map(([path, url]) => [path.split('/').pop().replace('.webp', ''), url]),
+);
+const BRAND_ART = { Xbox: 'xbox', 'Google Play': 'google-play', PlayStation: 'playstation', Apple: 'apple', Steam: 'steam', Netflix: 'netflix', Amazon: 'amazon', Airbnb: 'airbnb', 'Mastercard prepaid': 'mastercard' };
+const artFor = (name) => ART[BRAND_ART[name]];
+
+// A small card face for lists and tiles; white faces get a hairline so they don't melt into light panels
+const CardThumb = ({ name, className }) => (
+  <span className={cx('relative block shrink-0 overflow-hidden bg-white', className)}>
+    <img src={artFor(name)} alt="" className="absolute inset-0 size-full object-cover" />
+    <span className="absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-black/10" />
+  </span>
+);
+
 const CATEGORIES = ['All', 'Shopping', 'Gaming', 'Entertainment', 'Software', 'Payment Cards', 'Travel'];
 // Popular searches the app suggests, each mapped to the category it lives under
 const POPULAR = [['Xbox', 'Gaming'], ['Google Play', 'Software'], ['PlayStation', 'Gaming'], ['Apple', 'Software'], ['Steam', 'Gaming'], ['Netflix', 'Entertainment']];
+// Brands on the illustrative Discover screen, one or more per category (ranges are examples)
 const SAMPLE_CARDS = [
-  { name: 'Shopping card', cat: 'Shopping', range: '$5 – $100', tone: 'blue' },
-  { name: 'Gaming card', cat: 'Gaming', range: '$10 – $100', tone: 'violet' },
-  { name: 'Streaming card', cat: 'Entertainment', range: '$15 – $60', tone: 'rose' },
-  { name: 'App store card', cat: 'Software', range: '$10 – $50', tone: 'teal' },
-  { name: 'Travel card', cat: 'Travel', range: '$25 – $100', tone: 'amber' },
-  { name: 'Prepaid card', cat: 'Payment Cards', range: '$1 – $100', tone: 'blue' },
+  { name: 'Xbox', cat: 'Gaming', range: '$15 – $100' },
+  { name: 'Netflix', cat: 'Entertainment', range: '$25 – $100' },
+  { name: 'Amazon', cat: 'Shopping', range: '$5 – $500' },
+  { name: 'Apple', cat: 'Software', range: '$10 – $500' },
+  { name: 'PlayStation', cat: 'Gaming', range: '$10 – $100' },
+  { name: 'Google Play', cat: 'Software', range: '$10 – $100' },
+  { name: 'Airbnb', cat: 'Travel', range: '$50 – $200' },
+  { name: 'Mastercard prepaid', cat: 'Payment Cards', range: '$50 – $500' },
 ];
 
 // Card art gradients
@@ -60,41 +79,24 @@ const stagger = (i, base = 0, step = 50) => ({ animationDelay: `${base + i * ste
 /* ---------- Hero ---------- */
 
 const CARD_SIZE = {
-  hero: { card: 'h-[214px] w-[340px] rounded-[22px] px-[22px] py-5', chip: 'h-8 w-[42px]' },
-  phone: { card: 'h-[170px] w-full rounded-[18px] px-[18px] py-4', chip: 'h-[26px] w-[34px]' },
+  hero: 'h-[204px] w-[340px] rounded-[22px]',
+  phone: 'aspect-[5/3] w-full rounded-[18px]',
 };
 
-// Pass the card's positioning (relative/absolute) in className; its decorations are absolutely placed
-function GiftCard({ tone, label, size = 'hero', className = 'relative', style }) {
+// A real gift card face. Pass the card's positioning (relative/absolute) in className.
+function GiftCard({ brand, size = 'hero', className = 'relative', style }) {
   return (
     <div
       style={style}
       className={cx(
-        'isolate flex flex-col justify-between overflow-hidden text-white shadow-[0_30px_60px_-24px_rgba(5,10,30,0.7),inset_0_1px_0_rgba(255,255,255,0.25)]',
-        "before:absolute before:inset-0 before:-z-1 before:bg-[radial-gradient(circle_at_110%_-10%,rgba(255,255,255,0.35),transparent_45%),repeating-radial-gradient(circle_at_120%_130%,rgba(255,255,255,0.09)_0_1px,transparent_1px_18px)] before:content-['']",
+        'isolate overflow-hidden bg-white shadow-[0_30px_60px_-24px_rgba(5,10,30,0.7)]',
         "after:absolute after:inset-0 after:animate-[gc-sheen_6s_ease-in-out_infinite] after:bg-[linear-gradient(110deg,transparent_35%,rgba(255,255,255,0.22)_50%,transparent_65%)] after:content-[''] after:[transform:translateX(-120%)]",
-        TONE[tone],
-        CARD_SIZE[size].card,
+        CARD_SIZE[size],
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-2.5">
-        <span className="inline-flex items-center gap-2 font-nunito text-[15px] font-bold">
-          <span className="grid size-7 place-items-center rounded-[9px] bg-white"><img src={logo} alt="" width="20" height="20" /></span>
-          Mybitstore
-        </span>
-        <span className="rounded-full border border-white/35 bg-white/14 px-2.5 py-1 text-[11.5px] font-medium backdrop-blur-[6px]">{label}</span>
-      </div>
-      <span
-        className={cx(
-          'rounded-[7px] bg-[linear-gradient(90deg,transparent_45%,rgba(120,80,10,0.35)_45%_55%,transparent_55%),linear-gradient(transparent_30%,rgba(120,80,10,0.3)_30%_36%,transparent_36%_64%,rgba(120,80,10,0.3)_64%_70%,transparent_70%),linear-gradient(135deg,#ffe7a3,#d9a53f)] shadow-[inset_0_0_0_1px_rgba(120,80,10,0.25)]',
-          CARD_SIZE[size].chip,
-        )}
-      />
-      <div className="flex items-end justify-between text-[11px] font-semibold uppercase tracking-[2px]">
-        <span>Gift card</span>
-        <span className="font-inter text-sm tracking-[1.5px] opacity-85">•••• •••• ••••</span>
-      </div>
+      <img src={artFor(brand)} alt="" className="absolute inset-0 -z-1 size-full object-cover" />
+      <span className="absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-black/10" />
     </div>
   );
 }
@@ -108,9 +110,9 @@ function HeroVisual() {
   return (
     <div className="relative h-[470px] max-lg:mx-auto max-lg:w-[560px] max-lg:max-w-full max-sm:h-[360px] max-sm:[zoom:0.68]" aria-hidden="true">
       <div className="absolute left-1/2 top-1/2 size-[470px] -translate-x-1/2 -translate-y-1/2 animate-[spin-slow_80s_linear_infinite] rounded-full border border-dashed border-gc-accent/35 before:absolute before:inset-[60px] before:rounded-full before:border before:border-gc-accent/16 before:content-['']" />
-      <GiftCard tone="teal" label="Entertainment" className={cx(stackCard, 'left-[190px] top-[34px] rotate-[13deg]')} style={{ animationDelay: '0.25s, -2s' }} />
-      <GiftCard tone="violet" label="Gaming" className={cx(stackCard, 'left-[105px] top-[118px] -rotate-[7deg]')} style={{ animationDelay: '0.38s, -5s' }} />
-      <GiftCard tone="blue" label="Shopping" className={cx(stackCard, 'left-[38px] top-[214px] rotate-[4deg]')} style={{ animationDelay: '0.5s, 0s' }} />
+      <GiftCard brand="Netflix" className={cx(stackCard, 'left-[190px] top-[34px] rotate-[13deg]')} style={{ animationDelay: '0.25s, -2s' }} />
+      <GiftCard brand="PlayStation" className={cx(stackCard, 'left-[105px] top-[118px] -rotate-[7deg]')} style={{ animationDelay: '0.38s, -5s' }} />
+      <GiftCard brand="Apple" className={cx(stackCard, 'left-[38px] top-[214px] rotate-[4deg]')} style={{ animationDelay: '0.5s, 0s' }} />
       <div className={cx(float, 'left-0 top-[18px]')} style={{ animationDelay: '0.9s, -1s' }}>
         <span className="flex pl-1">
           {[coinBtc, coinUsdt, coinEth].map((src) => (
@@ -181,7 +183,6 @@ const CATEGORY_ICONS = {
 const CategoryIcon = ({ name, size = 18, className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...stroke}>{CATEGORY_ICONS[name]}</svg>
 );
-const POPULAR_TONES = ['violet', 'teal', 'blue', 'rose', 'amber', 'rose'];
 
 // Cycles the search placeholder through the popular brands, like a live search hint
 function useRotatingHint(items, ms = 2400) {
@@ -244,9 +245,7 @@ function Finder({ onPick }) {
                       rise(),
                     )}
                   >
-                    <span className={cx('grid size-10 shrink-0 place-items-center rounded-xl text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] transition-transform duration-[250ms] ease-soft group-hover/pop:-rotate-6 group-hover/pop:scale-106', TONE[POPULAR_TONES[i]])}>
-                      <CategoryIcon name={cat} size={18} />
-                    </span>
+                    <CardThumb name={name} className="h-8 w-[53px] rounded-md transition-transform duration-[250ms] ease-soft group-hover/pop:-rotate-3 group-hover/pop:scale-106" />
                     <span className="flex min-w-0 flex-1 flex-col">
                       <strong className="truncate text-[15px] font-semibold leading-[1.3] text-gc-text">{name}</strong>
                       <small className="text-[12.5px] text-gc-muted">{cat}</small>
@@ -348,7 +347,7 @@ function DiscoverScreen({ query, category }) {
       <ul className="flex flex-col overflow-hidden">
         {rows.map((c, i) => (
           <li key={c.name} style={stagger(i)} className="flex animate-[gc-screen-in_0.45s_var(--ease-soft)_backwards] items-center gap-2.5 border-b border-gc-screen-line py-[9px]">
-            <span className={cx(ph.tile, TONE[c.tone])}>{c.name[0]}</span>
+            <CardThumb name={c.name} className="h-[30px] w-[50px] rounded-md" />
             <div className="flex min-w-0 flex-1 flex-col">
               <strong className="text-[12.5px] font-semibold">{c.name}</strong>
               <small className={cx('text-[11px]', ph.muted)}>{c.range}</small>
@@ -368,8 +367,8 @@ function DiscoverScreen({ query, category }) {
 function SelectScreen() {
   return (
     <>
-      <ScreenBar title="Gaming card" />
-      <GiftCard tone="violet" label="Gaming" size="phone" />
+      <ScreenBar title="Xbox" />
+      <GiftCard brand="Xbox" size="phone" />
       <div className={ph.rowBetween}>
         <strong className="text-[13px] font-semibold">Choose amount</strong>
         <span className={cx('rounded-full px-2 py-0.5 text-[10.5px] font-semibold', ph.stock)}>● In stock</span>
@@ -405,9 +404,9 @@ function PrepareScreen() {
     <>
       <ScreenBar title="Cart" />
       <div className={cx(ph.panel, 'flex items-center gap-2.5')}>
-        <span className={cx(ph.tile, TONE.violet)}>G</span>
+        <CardThumb name="Xbox" className="h-[30px] w-[50px] rounded-md" />
         <div className="flex flex-1 flex-col">
-          <strong className="text-[12.5px]">Gaming card</strong>
+          <strong className="text-[12.5px]">Xbox</strong>
           <small className={cx('[font-size:smaller]', ph.muted)}>$25.00 × 1</small>
         </div>
         <span className="font-semibold">$25.00</span>
@@ -456,7 +455,7 @@ function PayScreen() {
 }
 
 function ConfirmScreen() {
-  const rows = [['Gift card', 'Gaming card'], ['Amount', '$25.00'], ['Quantity', '1'], ['Deliver to', 'you@email.com'], ['Pay with', 'USDT']];
+  const rows = [['Gift card', 'Xbox'], ['Amount', '$25.00'], ['Quantity', '1'], ['Deliver to', 'you@email.com'], ['Pay with', 'USDT']];
   return (
     <>
       <ScreenBar title="Checkout preview" />
@@ -488,7 +487,7 @@ function ReceiveScreen() {
       <span className="mt-1.5 text-[11.5px] font-semibold uppercase tracking-[0.6px] text-gc-screen-muted">History</span>
       <div className={cx(ph.panel, 'flex animate-[gc-screen-in_0.5s_var(--ease-soft)_0.35s_backwards] flex-col gap-2.5')}>
         <div className={ph.rowBetween}>
-          <strong>Gaming card</strong>
+          <span className="flex items-center gap-2"><CardThumb name="Xbox" className="h-6 w-10 rounded" /><strong>Xbox</strong></span>
           <span className="rounded-full bg-up/14 px-2 py-0.5 text-[10.5px] text-up">Completed</span>
         </div>
         <div className="flex items-center justify-between rounded-lg border border-dashed border-gc-screen-line px-2.5 py-[9px] font-inter tracking-[1px] text-gc-screen-muted">
@@ -515,8 +514,8 @@ function Walkthrough({ search }) {
     <section className="relative bg-page pb-24 pt-[112px] max-sm:pb-[72px] max-sm:pt-[72px]" id="how">
       <div className="site-container">
         <SectionHead
-          eyebrow="How buying works"
-          title="From brand to inbox in six steps."
+          eyebrow="From brand to inbox in six steps"
+          title="How to buy a gift card"
           lead="Find a card, check out with the method that suits you, and keep every code in one place."
         />
         <ol className="reveal grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1">
@@ -571,7 +570,7 @@ function Values() {
   return (
     <section className={section.alt}>
       <div className="site-container">
-        <SectionHead eyebrow="Why gift cards on Mybitstore" title="Crypto that works in everyday places." />
+        <SectionHead eyebrow="Crypto that works in everyday places" title="Why buy gift cards on Mybitstore?" />
         <div className="reveal grid grid-cols-3 gap-6 max-lg:grid-cols-1">
           {VALUES.map((v, i) => (
             <div
@@ -618,7 +617,7 @@ function Testimonials() {
   return (
     <section className={section.base} aria-label="Customer stories">
       <div className="site-container">
-        <SectionHead eyebrow="Customer stories" title="Hear it from our customers." lead="What people say about buying gift cards on Mybitstore.">
+        <SectionHead eyebrow="Hear it from our customers" title="What our customers say">
           {!TESTIMONIALS.length && (
             <span className="mt-5 rounded-full border border-dashed border-[#ff9500]/60 bg-[#ff9500]/10 px-4 py-1.5 text-[13px] font-medium text-[#ee8200] dark:text-[#ffb547]">
               Design preview with sample content. Add real reviews in testimonials.js.
@@ -698,6 +697,7 @@ function Cta() {
 
 export default function GiftCards() {
   useReveal();
+  useFigmaShortcut(showAllForCapture);
   const [search, setSearch] = useState({ query: '', category: 'All' });
 
   const pickSearch = (query, category) => {
@@ -716,12 +716,14 @@ export default function GiftCards() {
         <Testimonials />
         <FaqSection
           alt
-          eyebrow="Gift card FAQ"
-          title="Good questions, clear answers."
+          eyebrow="Good questions, clear answers"
+          title="Gift card questions and answers"
           lead={<>Need more help? Visit our <a className={text.inlineLink} href={links.support}>Help Center</a>.</>}
           items={FAQS}
         />
         <Cta />
+        {/* Design tooling, as in the web app: copies the page as Figma layers (also Alt + Shift + F) */}
+        <FigmaCopyButton prepare={showAllForCapture} className="fixed bottom-5 left-5 z-50 bg-gc-glass backdrop-blur-md max-sm:hidden" />
         <AppDownload glassQr />
       </main>
       <Footer showVersionSwitch={false} />

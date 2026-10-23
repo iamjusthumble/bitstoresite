@@ -6,7 +6,7 @@ import AreaChart from './AreaChart.jsx';
 import { ACTIVITIES, BALANCE, HOLDINGS, PERIOD_NAMES, balanceSeries } from './demoData.js';
 import { Money, useStored } from './format.jsx';
 import { Change, CoinLabel, PeriodSelect, card, cardTitle, coinById, pillPrimary, pillQuiet, seeAll, skeleton, tokenHref, tradeHref } from './parts.jsx';
-import { ArrowDownLeft, ArrowUpRight, ChevronRight, Deposit, Eye, EyeOff, More, Star, Trade, Withdraw } from './icons.jsx';
+import { ArrowDownLeft, ArrowUpRight, ChevronRight, Deposit, Eye, EyeOff, Gift, More, Star, Trade, Withdraw } from './icons.jsx';
 
 function BalanceCard({ hidden, onToggleHidden }) {
   const [period, setPeriod] = useState('All time');
@@ -55,6 +55,7 @@ function QuickActions({ onMore }) {
     [Deposit, 'Deposit', '#deposit'],
     [Trade, 'Buy & sell', '#buy/btc'],
     [Withdraw, 'Withdraw', '#withdraw'],
+    [Gift, 'Gift cards', '#gift-cards'],
   ];
   return (
     <section className={cx(card, 'w-[320px] shrink-0 max-md:w-full')} aria-labelledby="wa-actions">

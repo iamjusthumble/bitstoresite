@@ -39,3 +39,24 @@ export function useReveal(key) {
     };
   }, [key]);
 }
+
+// For a Figma capture: show every scroll-revealed section in its final state, with no entrance animation
+// half-way through. Returns a function that puts the reveals back as they were.
+export function showAllForCapture() {
+  const root = document.documentElement;
+  const hadReveal = root.classList.contains('js-reveal');
+  const visible = [...document.querySelectorAll('.is-visible')];
+  // No fades: sections must be fully shown the moment the capture reads them
+  const still = document.createElement('style');
+  still.textContent = '*, *::before, *::after { transition: none !important; }';
+  document.head.append(still);
+  root.classList.remove('js-reveal');
+  visible.forEach((el) => el.classList.remove('is-visible'));
+  void root.offsetHeight;
+  return () => {
+    if (hadReveal) root.classList.add('js-reveal');
+    visible.forEach((el) => el.classList.add('is-visible'));
+    void root.offsetHeight;
+    still.remove();
+  };
+}
