@@ -20,6 +20,8 @@ export const useCanTrade = () => useVerification()[0].email === 'verified';
 export const useTab = () => useStored('wa-gc-tab', 'buy');
 export const useGhsBalance = () => useStored('wa-gc-ghs', 3480.5);
 export const useBuyNow = () => useStored('wa-gc-buynow', null);
+// The country the customer is in: null until they pick one. Buy and Sell share it.
+export const useCountry = () => useStored('wa-gc-country', null);
 
 export function useCart() {
   const [cart, setCart] = useStored('wa-gc-cart', { items: [], savedAt: 0 });

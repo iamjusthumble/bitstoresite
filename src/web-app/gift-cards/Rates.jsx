@@ -3,17 +3,31 @@ import { cx } from '../../ui.js';
 import { bigPrimary, field } from '../flow.jsx';
 import { Clock } from '../icons.jsx';
 import { card, cardTitle } from '../parts.jsx';
-import { CARD_TYPES, COUNTRIES, SELL_BRANDS, brandById, countryPaused, gcHref, ghs, ghsRate, receiptMatters, sellCountries, sellRate } from './catalog.js';
+import { CARD_TYPES, COUNTRIES, brandById, countryPaused, gcHref, ghs, ghsRate, receiptMatters, sellBrandsIn, sellRate } from './catalog.js';
+import { CountryButton } from './country.jsx';
 import { freshDraft } from './Sell.jsx';
-import { useDraft } from './store.js';
+import { useCountry, useDraft } from './store.js';
 import { CardArt, Choices, QtyStepper } from './ui.jsx';
 
 // GC11: today's sell rates for a brand, with a calculator that hands off to the sell flow
+// Only brands buying cards from the customer's country are listed
 export default function Rates({ brandId }) {
-  const brand = brandById[brandId || 'apple'];
+  const [country] = useCountry();
+  const brands = sellBrandsIn(country);
+  if (!brands.length) {
+    return (
+      <div className="py-10 text-center">
+        <p className="text-lg font-semibold leading-7 text-wa-text">We’re not buying {COUNTRIES[country].name} cards yet.</p>
+        <CountryButton mode="sell" className="mt-5" />
+      </div>
+    );
+  }
+  const id = brands.some((b) => b.id === brandId) ? brandId : brands.some((b) => b.id === 'apple') ? 'apple' : brands[0].id;
+  return <BrandRates key={`${id}-${country}`} brand={brandById[id]} brands={brands} country={country} />;
+}
+
+function BrandRates({ brand, brands, country }) {
   const s = brand.sell;
-  const live = sellCountries(brand).filter((c) => !countryPaused(brand, c));
-  const [country, setCountry] = useState(live[0] || sellCountries(brand)[0]);
   const [type, setType] = useState(s.types[0]);
   const [receipt, setReceipt] = useState(s.receipt === 'required' ? 'with' : 'without');
   const [value, setValue] = useState(String(s.values ? s.values[Math.min(2, s.values.length - 1)] : 100));
@@ -45,9 +59,10 @@ export default function Rates({ brandId }) {
         <h2 className="text-2xl font-semibold leading-8 tracking-[-0.3px] text-wa-text">Today’s rates</h2>
         <p className="mt-1 flex items-center gap-1.5 text-sm leading-5 text-wa-muted"><Clock size={16} />Updated {new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(updated)} · cedis paid per unit of card value</p>
       </div>
+      <CountryButton mode="sell" className="w-fit" />
 
       <nav aria-label="Card brand" className="scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-        {SELL_BRANDS.map((b) => (
+        {brands.map((b) => (
           <a key={b.id} href={gcHref('rates', b.id)} aria-current={b.id === brand.id ? 'page' : undefined} className="inline-flex shrink-0 items-center gap-2.5 rounded-full border border-wa-line py-1.5 pl-1.5 pr-4 text-[15px] font-semibold leading-5 text-wa-muted transition-colors duration-150 hover:text-wa-text aria-[current=page]:border-tab-active aria-[current=page]:bg-tab-active/12 aria-[current=page]:text-wa-text">
             <CardArt brand={b} className="w-12" radius="rounded-full" shadow="" />
             {b.name}
@@ -61,9 +76,6 @@ export default function Rates({ brandId }) {
             <CardArt brand={brand} className="w-24 shrink-0" radius="rounded-lg" />
             <h3 id="wa-gc-rate-table" className={cardTitle}>{brand.name}</h3>
           </div>
-          {sellCountries(brand).length > 1 && (
-            <Choices className="mt-5" label="Country" options={sellCountries(brand).map((c) => [c, COUNTRIES[c].name])} value={country} onChange={setCountry} />
-          )}
           {notBuying ? (
             <p className="mt-6 rounded-2xl border border-dashed border-wa-line px-6 py-10 text-center text-[15px] leading-6 text-wa-muted">Not buying right now{countryPaused(brand, country) ? ` for ${COUNTRIES[country].name} cards` : ''}.</p>
           ) : (

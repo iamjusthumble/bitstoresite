@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { links } from '../../links.js';
 import { cx } from '../../ui.js';
 import { FieldError, Modal, bigOutline, bigPrimary, field, fieldBorder } from '../flow.jsx';
-import { Alert, ExternalLink, Globe, Shield } from '../icons.jsx';
+import { Alert, ExternalLink, Shield } from '../icons.jsx';
 import { BUY_SERVICE_FEE, COUNTRIES, LIMITS, buyCountries, buyPrice, face, gcHref, ghs, stockFor } from './catalog.js';
-import { useBuyNow, useCanTrade, useCart, useOnline, useToday } from './store.js';
+import { useBuyNow, useCanTrade, useCart, useCountry, useOnline, useToday } from './store.js';
+import { CountryButton, Flag } from './country.jsx';
 import { ghsShort } from './Hub.jsx';
 import { CardArt, Choices, Group, MobileBar, QtyStepper, Segmented, VerifyDialog, toast } from './ui.jsx';
 
@@ -18,9 +19,29 @@ const localInput = (ms) => {
   return d.toISOString().slice(0, 16);
 };
 
+// The brand page for the customer's country; a brand not sold there says so and offers the way back
 export default function BuyBrand({ brand }) {
-  const countries = buyCountries(brand);
-  const [country, setCountry] = useState(countries[0]);
+  const [country] = useCountry();
+  if (!brand.buy[country]) return <NotInCountry brand={brand} country={country} />;
+  return <BuyForm key={country} brand={brand} country={country} />;
+}
+
+function NotInCountry({ brand, country }) {
+  const elsewhere = buyCountries(brand);
+  return (
+    <section className="mx-auto grid w-full max-w-[520px] justify-items-center py-8 text-center" aria-labelledby="wa-gc-not-here">
+      <CardArt brand={brand} dim className="w-[220px]" radius="rounded-2xl" />
+      <h2 id="wa-gc-not-here" className="mt-8 text-2xl font-semibold leading-8 text-wa-text">{brand.name} cards aren’t available in {COUNTRIES[country].name}</h2>
+      <p className="mt-2 text-base leading-6 text-wa-muted">Available for {elsewhere.map((c) => COUNTRIES[c].name).join(', ')}. Each card only works on accounts from its own country.</p>
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <a href={gcHref('buy')} className={bigPrimary}>See {COUNTRIES[country].short} cards</a>
+        <CountryButton mode="buy" className="h-14" />
+      </div>
+    </section>
+  );
+}
+
+function BuyForm({ brand, country }) {
   const conf = brand.buy[country];
   const firstInStock = conf.denoms.find((v) => stockFor(brand, country, v) > 0);
   const [value, setValue] = useState(conf.denoms.includes(50) && stockFor(brand, country, 50) > 0 ? 50 : firstInStock ?? null);
@@ -44,14 +65,6 @@ export default function BuyBrand({ brand }) {
   const fee = amount ? BUY_SERVICE_FEE : 0;
   const total = unit * qty + fee;
   const sym = COUNTRIES[country].symbol;
-
-  const pickCountry = (c) => {
-    setCountry(c);
-    const next = brand.buy[c];
-    setValue(next.denoms.find((v) => stockFor(brand, c, v) > 0) ?? null);
-    setCustom('');
-    setQty(1);
-  };
 
   const errors = {
     amount: !value ? 'Choose an amount.' : isCustom && (amount < conf.custom[0] || amount > conf.custom[1] || !Number.isInteger(amount)) ? `Enter an amount between ${sym}${conf.custom[0]} and ${sym}${conf.custom[1]}.` : '',
@@ -119,7 +132,7 @@ export default function BuyBrand({ brand }) {
         <CardArt brand={brand} sheen value={amount || null} country={country} radius="rounded-3xl" shadow="shadow-[0_32px_64px_-28px_rgba(0,0,0,0.7)]" />
         <h2 className="mt-8 text-[32px] font-semibold leading-10 tracking-[-0.6px] text-wa-text max-sm:mt-6 max-sm:text-[26px] max-sm:leading-8">{brand.name}</h2>
         <p className="mt-2 inline-flex items-center gap-2 text-[15px] leading-6 text-wa-muted">
-          <Globe size={18} className="text-wa-accent" />
+          <Flag country={country} className="text-lg" />
           Works on {COUNTRIES[country].name} accounts only
         </p>
         <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold leading-5">
@@ -130,11 +143,9 @@ export default function BuyBrand({ brand }) {
 
       <section className="rounded-3xl border border-wa-line bg-wa-card p-8 max-sm:p-5" aria-label="Choose your card">
         <div className="grid gap-8">
-          {countries.length > 1 && (
-            <Group label="Country">
-              <Segmented label="Country" options={countries.map((c) => [c, COUNTRIES[c].name])} value={country} onChange={pickCountry} />
-            </Group>
-          )}
+          <Group label="Country">
+            <CountryButton mode="buy" className="w-full justify-start [&>span:nth-child(2)]:flex-1 [&>span:nth-child(2)]:text-left" />
+          </Group>
 
           <Group label="Amount">
             {outOfStock ? (

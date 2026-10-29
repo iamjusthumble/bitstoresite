@@ -2,26 +2,28 @@ import React, { useEffect, useState } from 'react';
 import usdtIcon from '../../assets/coin-usdt.svg';
 import { cx } from '../../ui.js';
 import { FieldError, Modal, Radio, Row, bigOutline, bigPrimary, chip, choice, field, fieldBorder } from '../flow.jsx';
-import { Alert, Check, Clipboard, Close, Plus, Search, Shield, Wallet } from '../icons.jsx';
+import { Alert, Check, ChevronRight, Clipboard, Clock, Close, Plus, Search, Shield, Wallet } from '../icons.jsx';
 import { ProviderLogo, accountLabel, canUse, maskNumber, usePaymentAccounts } from '../paymentAccounts.jsx';
 import { card, cardTitle } from '../parts.jsx';
 import {
-  CARD_TYPES, COUNTRIES, GHS_PER_USD, LIMITS, SELL_BRANDS, bandIndex, bestRate, brandById, cleanCode, countryPaused, face, gcHref, ghs, ghsRate,
-  groupCode, inReviewHours, maskCode, receiptMatters, sellCountries, sellRate, usdt,
+  CARD_TYPES, CATEGORIES, COUNTRIES, GHS_PER_USD, LIMITS, bandIndex, bestRate, brandById, cleanCode, countryPaused, face, gcHref, ghs, ghsRate,
+  groupCode, inReviewHours, maskCode, receiptMatters, sellBrandsIn, sellRate, usdt,
 } from './catalog.js';
-import { newId, submittedCodes, useCanTrade, useDraft, useNotify, useOnline, useToday, useTrades } from './store.js';
+import { CountryButton, Flag } from './country.jsx';
+import { newId, submittedCodes, useCanTrade, useCountry, useDraft, useNotify, useOnline, useToday, useTrades } from './store.js';
 import { CardArt, Choices, CountTo, MobileBar, PayOptions, PhotoSlot, QtyStepper, Segmented, StepIndicator, VerifyDialog, readPhoto, toast } from './ui.jsx';
 
 const STEPS = ['brand', 'details', 'cards', 'review'];
 const STEP_NAMES = ['Brand', 'Card details', 'Add cards', 'Review'];
 
-// A fresh trade for a brand, with anything known filled in (from rates, "Sell again" or the hub's quick quote)
+// A fresh trade for a brand, with anything known filled in (from rates, "Sell again" or the hub's quick quote).
+// The country comes from the customer's choice; a brand that doesn't buy there leaves it empty.
 export function freshDraft(brand, prefill = {}) {
-  const countries = sellCountries(brand).filter((c) => !countryPaused(brand, c));
+  const { country, ...rest } = prefill;
   return {
     brandId: brand.id,
     step: 'details',
-    country: countries.length === 1 ? countries[0] : null,
+    country: country && brand.sell.countries[country] ? country : null,
     type: brand.sell.types.length === 1 ? brand.sell.types[0] : null,
     receipt: brand.sell.receipt === 'required' ? 'with' : brand.sell.receipt === 'none' ? 'without' : null,
     value: null,
@@ -31,7 +33,7 @@ export function freshDraft(brand, prefill = {}) {
     note: '',
     payout: { method: 'wallet' },
     owned: false,
-    ...prefill,
+    ...rest,
   };
 }
 
@@ -39,12 +41,13 @@ const blankCard = () => ({ id: Math.random().toString(36).slice(2, 8), front: nu
 
 export default function Sell({ brandId, step }) {
   const [draft, setDraft] = useDraft();
+  const [country] = useCountry();
   const brand = brandId ? brandById[brandId] : null;
 
   // Arriving on a brand's page without a matching draft (a deep link, or a different brand) starts one
   useEffect(() => {
     if (brand && (!draft || draft.brandId !== brand.id)) {
-      setDraft(freshDraft(brand));
+      setDraft(freshDraft(brand, { country }));
       if (step !== 'details') window.location.replace(gcHref('sell', brand.id));
     }
   }, [brandId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -68,7 +71,7 @@ export default function Sell({ brandId, step }) {
         </button>
       </div>
 
-      {step === 'brand' && <ChooseBrand setDraft={setDraft} />}
+      {step === 'brand' && <ChooseBrand key={country} country={country} setDraft={setDraft} />}
       {brand && step === 'details' && <Details brand={brand} draft={draft} update={update} />}
       {brand && step === 'cards' && <AddCards brand={brand} draft={draft} update={update} />}
       {brand && step === 'review' && <Review brand={brand} draft={draft} update={update} setDraft={setDraft} />}
@@ -89,48 +92,72 @@ export default function Sell({ brandId, step }) {
 
 /* ——— GC05 Choose brand ——— */
 
-function BrandOption({ brand, onPick }) {
-  const off = brand.sell.notBuying;
+function BrandOption({ brand, country, onPick }) {
+  const off = brand.sell.notBuying || countryPaused(brand, country);
+  const sym = COUNTRIES[country].symbol;
   const inner = (
     <>
       <CardArt brand={brand} dim={off} radius="rounded-2xl" className={off ? '' : 'transition-transform duration-300 group-hover:-translate-y-1'}>
         {off && <span className="absolute left-3 top-3 rounded-full bg-black/70 px-2.5 py-0.5 text-xs font-bold leading-5 text-white">Paused</span>}
       </CardArt>
       <span className={cx('mt-3 block text-base font-semibold leading-6', off ? 'text-wa-muted' : 'text-wa-text')}>{brand.name}</span>
-      <span className="block text-sm leading-5 text-wa-muted tabular-nums">{off ? 'Not buying now' : `Up to ${ghsRate(bestRate(brand))}/$`}</span>
+      <span className="block text-sm leading-5 text-wa-muted tabular-nums">{off ? 'Not buying now' : `Up to ${ghsRate(bestRate(brand, country))}/${sym}`}</span>
     </>
   );
   if (off) return <div aria-label={`${brand.name}, not buying now`}>{inner}</div>;
   return <button type="button" onClick={() => onPick(brand)} className="group block w-full text-left">{inner}</button>;
 }
 
-function ChooseBrand({ setDraft }) {
+function ChooseBrand({ country, setDraft }) {
   const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('all');
   const term = query.trim().toLowerCase();
   const pick = (brand) => {
-    setDraft(freshDraft(brand));
+    setDraft(freshDraft(brand, { country }));
     window.location.hash = gcHref('sell', brand.id);
   };
-  // Brands that are buying first
-  const matches = SELL_BRANDS.filter((b) => b.name.toLowerCase().includes(term)).sort((a, b) => Number(Boolean(a.sell.notBuying)) - Number(Boolean(b.sell.notBuying)));
+  const available = sellBrandsIn(country);
+  const closed = (b) => Boolean(b.sell.notBuying || countryPaused(b, country));
+  const categories = CATEGORIES.filter(([key]) => key === 'all' || available.some((b) => b.category === key));
+  // Brands that are buying first, best rate first
+  const matches = available
+    .filter((b) => (category === 'all' || b.category === category) && b.name.toLowerCase().includes(term))
+    .sort((a, b) => Number(closed(a)) - Number(closed(b)) || bestRate(b, country) - bestRate(a, country));
 
   return (
     <section aria-labelledby="wa-gc-pick">
       <div className="flex flex-wrap items-end justify-between gap-6">
-        <h2 id="wa-gc-pick" className="text-[32px] font-semibold leading-10 tracking-[-0.6px] text-wa-text max-sm:text-[26px] max-sm:leading-8">What are you selling?</h2>
-        <label className={cx(field, 'flex h-12 w-[320px] items-center gap-3 border-wa-line px-4 text-wa-muted focus-within:border-tab-active focus-within:text-wa-text max-sm:w-full')}>
-          <Search size={20} className="shrink-0" />
-          <span className="sr-only">Search card brands</span>
-          <input type="search" autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search brands" autoComplete="off" className="min-w-0 flex-1 bg-transparent text-base leading-6 text-wa-text outline-none placeholder:text-wa-muted" />
-        </label>
+        <div>
+          <h2 id="wa-gc-pick" className="text-[32px] font-semibold leading-10 tracking-[-0.6px] text-wa-text max-sm:text-[26px] max-sm:leading-8">What are you selling?</h2>
+          <p className="mt-2 flex items-center gap-2 text-[15px] leading-6 text-wa-muted">
+            <Flag country={country} className="text-lg" />
+            Cards we buy from {COUNTRIES[country].name}
+          </p>
+        </div>
+        <div className="flex items-center gap-3 max-sm:w-full">
+          <CountryButton mode="sell" short />
+          <label className={cx(field, 'flex h-12 w-[300px] items-center gap-3 border-wa-line px-4 text-wa-muted focus-within:border-tab-active focus-within:text-wa-text max-sm:w-auto max-sm:flex-1')}>
+            <Search size={20} className="shrink-0" />
+            <span className="sr-only">Search card brands</span>
+            <input type="search" autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search brands" autoComplete="off" className="min-w-0 flex-1 bg-transparent text-base leading-6 text-wa-text outline-none placeholder:text-wa-muted" />
+          </label>
+        </div>
       </div>
+      {categories.length > 2 && (
+        <div className="scrollbar-none -mx-1 mt-6 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Categories">
+          {categories.map(([key, name]) => (
+            <button key={key} type="button" aria-pressed={category === key} onClick={() => setCategory(key)} className={cx(chip, 'shrink-0')}>{name}</button>
+          ))}
+        </div>
+      )}
       {matches.length ? (
         <div className="mt-8 grid grid-cols-4 gap-x-6 gap-y-9 max-xl:grid-cols-3 max-md:grid-cols-2 max-sm:gap-x-4 max-sm:gap-y-6">
-          {matches.map((b) => <BrandOption key={b.id} brand={b} onPick={pick} />)}
+          {matches.map((b) => <BrandOption key={b.id} brand={b} country={country} onPick={pick} />)}
         </div>
       ) : (
-        <p className="py-16 text-center text-base leading-6 text-wa-muted">We don’t buy “{query.trim()}” cards yet.</p>
+        <p className="py-16 text-center text-base leading-6 text-wa-muted">{term ? `We don’t buy “${query.trim()}” cards from ${COUNTRIES[country].name} yet.` : 'Nothing here yet.'}</p>
       )}
+      <p className="mt-10 border-t border-wa-line pt-6 text-sm leading-5 text-wa-muted">Card from another country? Brands and rates differ by country. <CountryButton mode="sell" className="ml-2 h-8 align-middle text-sm" /></p>
     </section>
   );
 }
@@ -159,7 +186,16 @@ function PayoutPanel({ brand, draft, update, children, locked }) {
       <p className="max-lg:hidden text-[34px] font-semibold leading-10 tracking-[-0.6px] text-wa-text tabular-nums" aria-live="polite" aria-atomic="true">
         {complete ? (isUsdt ? <CountTo value={usdtAmount} format={usdt} /> : <CountTo value={payout} format={ghs} />) : <span className="text-wa-muted">{isUsdt ? usdt(0) : ghs(0)}</span>}
       </p>
-      <p className="mt-1 text-sm leading-5 text-wa-muted tabular-nums max-lg:hidden">{rate ? `${ghsRate(rate)} per ${sym}1${locked ? ' · locked on submit' : ''}` : draft.country ? 'Not buying these cards right now' : 'Pick a country to see the rate'}</p>
+      <p className="mt-1 text-sm leading-5 text-wa-muted tabular-nums max-lg:hidden">{rate ? `${ghsRate(rate)} per ${sym}1` : draft.country ? 'Not buying these cards right now' : 'Pick a country to see the rate'}</p>
+      {complete && (
+        <dl className="mt-5 grid gap-1.5 border-t border-wa-line pt-4 max-lg:hidden">
+          <Row label="Cards">{face(draft.country, draft.value)} × {draft.qty}</Row>
+          <Row label="Rate">{ghsRate(rate)}/{sym}</Row>
+          <Row label="Fees">None</Row>
+          {isUsdt && <Row label="In USDT">≈ {usdt(usdtAmount)}</Row>}
+        </dl>
+      )}
+      {complete && <p className="mt-3 flex items-center gap-1.5 text-xs leading-4 text-wa-muted max-lg:hidden"><Clock size={14} />{locked ? `Rate held for ${LIMITS.rateLockMinutes} min once you submit` : 'Rate locks when you submit'}</p>}
 
       {!locked && (
         <label className="mt-5 flex cursor-pointer items-center justify-between gap-3 rounded-2xl bg-wa-pill/45 px-4 py-3 max-lg:mt-0">
@@ -203,11 +239,50 @@ function Field({ label, children }) {
 
 /* ——— GC06 Card details ——— */
 
+// Whole cedis, for the payout under each value: "GH₵ 1,120"
+const ghsWhole = (v) => `GH₵ ${new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(v)}`;
+
+// Big choices with a line of detail and the rate each one pays, so the trade-off is plain
+function OptionCards({ id, label, options, value, onChange }) {
+  return (
+    <div id={id} tabIndex={-1} role="radiogroup" aria-label={label} className={cx('grid gap-3', options.length > 1 && 'grid-cols-2 max-sm:grid-cols-[minmax(0,1fr)]')}>
+      {options.map((o) => {
+        const on = value === o.key;
+        return (
+          <button
+            key={o.key}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(o.key)}
+            className={cx('flex items-start gap-3 rounded-2xl border p-4 text-left transition-colors duration-150', on ? 'border-tab-active bg-tab-active/10' : 'border-wa-line hover:border-wa-muted/60')}
+          >
+            <Radio checked={on} />
+            <span className="min-w-0 flex-1">
+              <span className="flex items-baseline justify-between gap-3">
+                <span className="text-base font-semibold leading-6 text-wa-text">{o.title}</span>
+                {o.aside && <span className="shrink-0 text-sm font-semibold leading-5 text-wa-text tabular-nums">{o.aside}</span>}
+              </span>
+              {o.detail && <span className="mt-0.5 block text-sm leading-5 text-wa-muted">{o.detail}</span>}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+const TYPE_DETAIL = {
+  physical: 'A plastic card. You’ll photograph the front and back.',
+  ecode: 'A digital code from an email or app. You’ll type it in.',
+};
+
 function Details({ brand, draft, update }) {
   const { country, type, receipt, value, qty } = draft;
   const s = brand.sell;
   const [typed, setTyped] = useState(s.range && value ? String(value) : '');
   const [attempted, setAttempted] = useState(false);
+  const [, setCountry] = useCountry();
   const today = useToday();
   const online = useOnline();
   const canTrade = useCanTrade();
@@ -216,8 +291,15 @@ function Details({ brand, draft, update }) {
   const { complete, payout } = quote(brand, draft);
   const paused = country && countryPaused(brand, country);
   const sym = country ? COUNTRIES[country].symbol : '$';
-  const alternatives = sellCountries(brand).filter((c) => !countryPaused(brand, c));
   const valueBad = value != null && bandIndex(brand, value) < 0;
+  // Rates for the choices shown, using what's been picked so far
+  const rateFor = (patch) => (country && !paused ? sellRate(brand, { country, type: type || s.types[0], receipt: receipt || 'without', value: value && !valueBad ? value : undefined, ...patch }) : 0);
+
+  // A country this brand doesn't buy from sends the customer back to pick a brand there
+  const changeCountry = (c) => {
+    if (brand.sell.countries[c]) update({ country: c });
+    else window.location.hash = gcHref('sell', 'new');
+  };
 
   const limitError =
     today.open >= LIMITS.maxOpenTrades ? `You have ${LIMITS.maxOpenTrades} trades in review. Wait for one to finish.`
@@ -226,6 +308,12 @@ function Details({ brand, draft, update }) {
           : '';
   const missing = !country ? 'country' : !type ? 'type' : !receipt ? 'receipt' : !value ? 'value' : null;
   const ok = complete && !limitError && !paused;
+
+  // Bigger cards pay more per unit: say so when a smaller one is picked
+  const bands = s.bands;
+  const upsell = country && !paused && value && bands.length > 1 && bandIndex(brand, value) === 0
+    ? { from: bands[1][0], extra: rateFor({ value: bands[1][0] }) - rateFor({ value }) }
+    : null;
 
   const next = () => {
     if (!canTrade) return setVerify(true);
@@ -240,6 +328,8 @@ function Details({ brand, draft, update }) {
     return undefined;
   };
 
+  // Common values for brands that take any amount in a range
+  const quick = s.range ? [s.range[0], 50, 100, 200].filter((v, i, all) => v >= s.range[0] && v <= s.range[1] && all.indexOf(v) === i) : [];
 
   return (
     <div className={layout}>
@@ -247,36 +337,64 @@ function Details({ brand, draft, update }) {
         <BrandHeader brand={brand} title="About your card" />
 
         <div id="wa-gc-country" tabIndex={-1}>
-          <Field label="Country on the card">
-            <Segmented label="Country" options={sellCountries(brand).map((c) => [c, sellCountries(brand).length > 2 ? COUNTRIES[c].short : COUNTRIES[c].name])} value={country} onChange={(c) => update({ country: c })} />
+          <Field label="Card country">
+            {country ? (
+              <div className="flex items-center justify-between gap-4 rounded-2xl border border-wa-line p-4">
+                <span className="flex min-w-0 items-center gap-3">
+                  <Flag country={country} className="text-[28px]" />
+                  <span className="min-w-0">
+                    <span className="block text-base font-semibold leading-6 text-wa-text">{COUNTRIES[country].name}</span>
+                    <span className="block text-sm leading-5 text-wa-muted">Card value in {COUNTRIES[country].currency}</span>
+                  </span>
+                </span>
+                <CountryButton mode="sell" short onPicked={changeCountry} className="h-10" />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-wa-line p-4 text-[15px] leading-6 text-wa-muted">
+                We don’t buy {brand.name} cards from your country. <a href={gcHref('sell', 'new')} className="font-semibold text-wa-accent hover:underline">See what we buy</a>
+                <span className="mt-3 flex flex-wrap gap-2">
+                  {Object.keys(s.countries).filter((c) => !countryPaused(brand, c)).map((c) => (
+                    <button key={c} type="button" onClick={() => { setCountry(c); update({ country: c }); }} className={chip}><Flag country={c} />{COUNTRIES[c].name} card</button>
+                  ))}
+                </span>
+              </div>
+            )}
           </Field>
           {paused && (
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm leading-5 text-wa-muted" role="alert">
-              <span className="font-semibold text-down">Not buying {COUNTRIES[country].name} cards right now.</span>
-              {alternatives.map((c) => <button key={c} type="button" onClick={() => update({ country: c })} className={chip}>Switch to {COUNTRIES[c].short}</button>)}
-            </div>
+            <p className="mt-3 text-sm font-semibold leading-5 text-down" role="alert">We’ve paused buying {COUNTRIES[country].name} {brand.name} cards. Try again later.</p>
           )}
           {attempted && !country && <FieldError>Choose a country.</FieldError>}
         </div>
 
-        <div id="wa-gc-type" tabIndex={-1}>
+        <div>
           <Field label="Card type">
-            {s.types.length > 1 ? (
-              <Segmented label="Card type" options={s.types.map((t) => [t, CARD_TYPES[t]])} value={type} onChange={(t) => update({ type: t })} />
-            ) : (
-              <p className="text-base font-semibold leading-6 text-wa-text">{CARD_TYPES[s.types[0]]} only</p>
-            )}
+            <OptionCards
+              id="wa-gc-type"
+              label="Card type"
+              value={type}
+              onChange={(t) => update({ type: t })}
+              options={s.types.map((t) => ({ key: t, title: CARD_TYPES[t], detail: TYPE_DETAIL[t], aside: rateFor({ type: t }) ? `${ghsRate(rateFor({ type: t }))}/${sym}` : null }))}
+            />
           </Field>
           {attempted && !type && <FieldError>Choose a card type.</FieldError>}
         </div>
 
         {s.receipt !== 'none' && (
-          <div id="wa-gc-receipt" tabIndex={-1}>
+          <div>
             <Field label="Receipt">
               {receiptMatters(brand) ? (
-                <Segmented label="Receipt" options={[['with', 'I have it · better rate'], ['without', 'No receipt']]} value={receipt} onChange={(r) => update({ receipt: r })} />
+                <OptionCards
+                  id="wa-gc-receipt"
+                  label="Receipt"
+                  value={receipt}
+                  onChange={(v) => update({ receipt: v })}
+                  options={[
+                    { key: 'with', title: 'I have the receipt', detail: 'Pays more. You’ll add a photo of it.', aside: rateFor({ receipt: 'with' }) ? `${ghsRate(rateFor({ receipt: 'with' }))}/${sym}` : null },
+                    { key: 'without', title: 'No receipt', detail: 'Still accepted, at a lower rate.', aside: rateFor({ receipt: 'without' }) ? `${ghsRate(rateFor({ receipt: 'without' }))}/${sym}` : null },
+                  ]}
+                />
               ) : (
-                <p className="text-base font-semibold leading-6 text-wa-text">Required for this card</p>
+                <p id="wa-gc-receipt" tabIndex={-1} className="flex gap-2 text-[15px] leading-6 text-wa-text"><Alert size={18} className="mt-0.5 shrink-0 text-wa-warn" />A store receipt is required for {brand.name} cards. You’ll add a photo of it.</p>
               )}
             </Field>
             {attempted && !receipt && <FieldError>Choose one.</FieldError>}
@@ -284,38 +402,64 @@ function Details({ brand, draft, update }) {
         )}
 
         <div id="wa-gc-value" tabIndex={-1}>
-          <Field label="Value">
+          <Field label="Card value">
             {s.values ? (
-              <Choices label="Card value" layout="grid grid-cols-5 gap-2 max-sm:grid-cols-3" options={s.values} value={value} onChange={(v) => update({ value: v })} render={(v) => <span className="block text-center text-base tabular-nums">{sym}{v}</span>} />
+              <Choices
+                label="Card value"
+                layout="grid grid-cols-5 gap-2 max-sm:grid-cols-3"
+                options={s.values}
+                value={value}
+                onChange={(v) => update({ value: v })}
+                render={(v) => (
+                  <span className="block text-center">
+                    <span className="block text-base tabular-nums">{sym}{v}</span>
+                    {rateFor({ value: v }) > 0 && <span className="block text-xs font-normal leading-4 text-wa-muted tabular-nums">{ghsWhole(v * rateFor({ value: v }))}</span>}
+                  </span>
+                )}
+              />
             ) : (
-              <div className={cx(field, fieldBorder(valueBad || (attempted && !value)), 'flex h-14 max-w-[240px] items-center gap-2 px-4')}>
-                <span className="text-xl font-semibold text-wa-muted" aria-hidden="true">{sym}</span>
-                <input
-                  aria-label="Card value"
-                  value={typed}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/\D/g, '').slice(0, 4);
-                    setTyped(raw);
-                    update({ value: raw ? Number(raw) : null });
-                  }}
-                  inputMode="numeric"
-                  placeholder={`${s.range[0]}–${s.range[1]}`}
-                  className="min-w-0 flex-1 bg-transparent text-xl font-semibold text-wa-text outline-none tabular-nums placeholder:text-wa-muted/50"
-                />
+              <div className="flex flex-wrap items-center gap-3">
+                <div className={cx(field, fieldBorder(valueBad || (attempted && !value)), 'flex h-14 w-[200px] items-center gap-2 px-4')}>
+                  <span className="text-xl font-semibold text-wa-muted" aria-hidden="true">{sym}</span>
+                  <input
+                    aria-label="Card value"
+                    value={typed}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, '').slice(0, 4);
+                      setTyped(raw);
+                      update({ value: raw ? Number(raw) : null });
+                    }}
+                    inputMode="numeric"
+                    placeholder={`${s.range[0]}–${s.range[1]}`}
+                    className="min-w-0 flex-1 bg-transparent text-xl font-semibold text-wa-text outline-none tabular-nums placeholder:text-wa-muted/50"
+                  />
+                </div>
+                {quick.map((v) => (
+                  <button key={v} type="button" aria-pressed={value === v} onClick={() => { setTyped(String(v)); update({ value: v }); }} className={chip}>{sym}{v}</button>
+                ))}
               </div>
             )}
           </Field>
-          {valueBad && <FieldError>We don’t buy this value.</FieldError>}
+          {valueBad && <FieldError>We buy {sym}{s.range ? `${s.range[0]} to ${sym}${s.range[1]}` : s.values.join(`, ${sym}`)} cards.</FieldError>}
           {attempted && !value && <FieldError>Choose a value.</FieldError>}
+          {upsell && upsell.extra > 0 && (
+            <p className="mt-3 flex gap-2 text-sm leading-5 text-wa-muted"><span className="text-up" aria-hidden="true">↑</span>Cards of {sym}{upsell.from} or more get {ghsRate(upsell.extra)} more per {sym}1.</p>
+          )}
         </div>
 
         <div className="flex items-center justify-between gap-4 border-t border-wa-line pt-7">
           <div>
             <p className="text-base font-semibold leading-6 text-wa-text">How many cards?</p>
-            <button type="button" onClick={() => setRules(true)} className="text-sm font-semibold leading-5 text-wa-accent hover:underline">Card rules</button>
+            <p className="text-sm leading-5 text-wa-muted">Same brand and value. Up to {LIMITS.maxSellQty}.</p>
           </div>
           <QtyStepper value={qty} max={LIMITS.maxSellQty} onChange={(q) => update({ qty: q })} />
         </div>
+
+        <button type="button" onClick={() => setRules(true)} className="flex items-center gap-3 rounded-2xl bg-wa-pill/45 px-4 py-3.5 text-left text-[15px] font-semibold leading-5 text-wa-text transition-colors duration-150 hover:bg-wa-pill">
+          <Shield size={20} className="shrink-0 text-wa-accent" />
+          <span className="min-w-0 flex-1">{brand.name} card rules<span className="block text-sm font-normal text-wa-muted">{s.rules.length} things to check before you sell</span></span>
+          <ChevronRight size={18} className="shrink-0 text-wa-muted" />
+        </button>
       </div>
 
       <PayoutPanel brand={brand} draft={draft} update={update}>
@@ -412,6 +556,7 @@ function AddCards({ brand, draft, update }) {
   // An upload older than a few seconds was cut off (the page reloaded); its slot offers a retry
   const uploading = images.filter((x) => x.uploading && Date.now() - x.uploading < 5000).length;
   const complete = issues.every((i) => !Object.keys(i).length) && !receiptIssue;
+  const readyCount = issues.filter((i) => !Object.keys(i).length).length;
 
   // Codes and photo states are checked as they change, so the page goes straight back to Review once fixed
   const setCard = (id, patch) => update((d) => ({ cards: (d.cards.length === d.qty ? d.cards : cards).map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
@@ -436,8 +581,25 @@ function AddCards({ brand, draft, update }) {
       <div className="grid grid-cols-[minmax(0,1fr)] gap-9">
         <div>
           <BrandHeader brand={brand} title={physical ? `Photograph your ${draft.qty === 1 ? 'card' : `${draft.qty} cards`}` : `Enter your ${draft.qty === 1 ? 'code' : `${draft.qty} codes`}`} />
-          <p className="mt-2 text-[15px] leading-6 text-wa-muted">{physical ? 'Flat, well lit, code fully visible.' : s.code?.hint}</p>
+          <p className="mt-2 text-[15px] leading-6 text-wa-muted">{face(draft.country, draft.value)} {COUNTRIES[draft.country].name} {CARD_TYPES[draft.type].toLowerCase()}{draft.qty > 1 ? 's' : ''} · {physical ? 'flat, well lit, code fully visible' : s.code?.hint}</p>
+          {draft.qty > 1 && (
+            <div className="mt-5" aria-live="polite">
+              <p className="text-sm font-semibold leading-5 text-wa-text tabular-nums">{readyCount} of {draft.qty} cards ready</p>
+              <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-wa-pill"><span className="block h-full rounded-full bg-up transition-[width] duration-300" style={{ width: `${(readyCount / draft.qty) * 100}%` }} /></span>
+            </div>
+          )}
         </div>
+
+        {physical && (
+          <ul className="grid grid-cols-3 gap-3 max-sm:grid-cols-[minmax(0,1fr)]" aria-label="Photo tips">
+            {[['Flat and in focus', 'No glare over the code'], ['Code fully scratched', 'Every character readable'], ['Nothing covered', 'Show the whole card']].map(([t, d]) => (
+              <li key={t} className="flex gap-2.5 rounded-2xl bg-wa-pill/45 p-3.5 text-sm leading-5">
+                <Check size={16} className="mt-0.5 shrink-0 text-up" />
+                <span><span className="block font-semibold text-wa-text">{t}</span><span className="text-wa-muted">{d}</span></span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {cards.map((c, i) => {
           const err = attempted ? issues[i] : {};
@@ -606,9 +768,29 @@ function Review({ brand, draft, update, setDraft }) {
           </div>
         </section>
 
-        <p className="flex gap-3 text-sm leading-5 text-wa-muted">
+        <section aria-labelledby="wa-gc-next">
+          <h2 id="wa-gc-next" className="text-lg font-semibold leading-7 text-wa-text">What happens next</h2>
+          <ol className="mt-4 grid gap-0">
+            {[
+              ['You submit', `Your rate of ${ghsRate(rate)}/${sym} is locked.`],
+              ['We check your card', reviewNow ? `Usually about ${brand.sell.median || 15} minutes. We’ll notify you.` : 'Reviews run 08:00–22:00 GMT. Yours starts at 08:00.'],
+              ['You get paid', `${method === 'usdt' ? usdt(usdtAmount) : ghs(payout)} to ${method === 'momo' ? paidTo : method === 'usdt' ? 'your USDT wallet' : 'your GHS wallet, instantly'}.`],
+            ].map(([t, d], i, all) => (
+              <li key={t} className="relative flex gap-4 pb-5 last:pb-0">
+                {i < all.length - 1 && <span aria-hidden="true" className="absolute left-[13px] top-8 bottom-1 w-px bg-wa-line" />}
+                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-tab-active/15 text-xs font-bold text-wa-accent">{i + 1}</span>
+                <span className="min-w-0 pt-0.5">
+                  <span className="block text-[15px] font-semibold leading-6 text-wa-text">{t}</span>
+                  <span className="block text-sm leading-5 text-wa-muted tabular-nums">{d}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <p className="flex gap-3 rounded-2xl bg-wa-warn/10 p-4 text-sm leading-5 text-wa-text">
           <Shield size={18} className="mt-px shrink-0 text-wa-warn" />
-          <span>Asked to buy this card to pay someone? That’s a scam. {reviewNow ? `Review takes about ${brand.sell.median || 15} min.` : 'Review starts at 08:00.'}</span>
+          <span>Were you asked to buy this card to pay someone? That’s a scam.</span>
         </p>
       </div>
 

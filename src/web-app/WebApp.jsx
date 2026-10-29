@@ -17,6 +17,7 @@ import NotificationsView, { NotificationsBell, useUnreadCount } from './Notifica
 import SettingsView, { SETTINGS_TABS } from './Settings.jsx';
 import { fullName, useProfile } from './account.js';
 import Withdraw from './Withdraw.jsx';
+import Swap from './Swap.jsx';
 import GiftCards, { gcNested, gcParent, gcTitle } from './gift-cards/GiftCards.jsx';
 import { useGiftCardTicker } from './gift-cards/store.js';
 import Token from './Token.jsx';
@@ -36,7 +37,7 @@ const NAV = [
   ['notifications', 'Notifications', Bell],
   ['settings', 'Settings', Settings],
 ];
-const TITLES = { ...Object.fromEntries(NAV.map(([id, label]) => [id, label])), trade: 'Buy & sell', activity: 'Activity', referral: 'Referrals', deposit: 'Deposit', withdraw: 'Withdraw' };
+const TITLES = { ...Object.fromEntries(NAV.map(([id, label]) => [id, label])), trade: 'Buy & sell', activity: 'Activity', referral: 'Referrals', deposit: 'Deposit', withdraw: 'Withdraw', swap: 'Swap' };
 
 // Routes live in the URL hash: #home, #assets, … #token/eth for a coin's details, and #buy/eth or #sell/eth for
 // the order page, which takes a step (#buy/eth/review, #buy/eth/done) or, when buying, a wallet (#buy/eth/external).
@@ -51,6 +52,7 @@ function readRoute() {
     return { id: 'order', side: id, coin: coinBySymbol[symbol], step: ['review', 'done'].includes(side) ? side : 'details', wallet: ['external', 'mybitstore'].includes(side) ? side : undefined };
   }
   if (id === 'deposit') return { id, way: symbol === 'fiat' ? 'fiat' : 'crypto', step: side || 'details' };
+  if (id === 'swap') return { id, way: symbol === 'crypto' ? 'crypto' : 'fiat' };
   if (id === 'payments') return { id, adding: symbol === 'add' };
   if (id === 'settings') return { id, tab: [...SETTINGS_TABS.map(([key]) => key), 'delete-account'].includes(symbol) ? symbol : 'profile' };
   if (id === 'withdraw') return { id, way: ['user', 'fiat'].includes(symbol) ? symbol : 'wallet', step: side || 'details' };
@@ -299,7 +301,7 @@ export default function WebApp() {
   const searchRef = useRef(null);
   const [profile] = useProfile();
   // Token, buy, deposit and withdraw pages are reached from another view, so they show Back instead of a title
-  const nested = ['token', 'order', 'deposit', 'withdraw'].includes(view) || (view === 'gift-cards' && gcNested(route.gc));
+  const nested = ['token', 'order', 'deposit', 'withdraw', 'swap'].includes(view) || (view === 'gift-cards' && gcNested(route.gc));
   const title = view === 'token' ? route.coin.name : view === 'order' ? `${route.side === 'buy' ? 'Buy' : 'Sell'} ${route.coin.name}` : view === 'gift-cards' ? gcTitle(route.gc) : TITLES[view];
 
   useFigmaShortcut();
@@ -333,7 +335,7 @@ export default function WebApp() {
   return (
     <div className="flex min-h-screen bg-wa-bg font-nunito text-wa-text">
       {/* A token page keeps Home highlighted: it is reached from, and returns to, the dashboard */}
-      <SideMenu view={['token', 'deposit', 'withdraw'].includes(view) ? 'home' : view === 'order' ? 'trade' : view} collapsed={collapsed} onCollapse={() => setCollapsed((c) => !c)} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <SideMenu view={['token', 'deposit', 'withdraw', 'swap'].includes(view) ? 'home' : view === 'order' ? 'trade' : view} collapsed={collapsed} onCollapse={() => setCollapsed((c) => !c)} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       {drawerOpen && <button type="button" aria-label="Close menu" className="fixed inset-0 z-40 bg-black/55 lg:hidden" onClick={() => setDrawerOpen(false)} />}
 
       <div className="mx-auto min-w-0 max-w-[1280px] flex-1 px-10 pb-10 max-lg:px-6 max-sm:px-4">
@@ -377,13 +379,14 @@ export default function WebApp() {
           {view === 'trade' && <TradeView />}
           {view === 'deposit' && <Deposit way={route.way} step={route.step} />}
           {view === 'withdraw' && <Withdraw way={route.way} step={route.step} />}
+          {view === 'swap' && <Swap way={route.way} />}
           {view === 'payments' && <Payments adding={route.adding} />}
           {view === 'notifications' && <NotificationsView />}
           {view === 'referral' && <Referral />}
           {view === 'gift-cards' && <GiftCards parts={route.gc} />}
           {view === 'settings' && <SettingsView tab={route.tab} />}
           {view === 'order' && <Order key={`${route.side}-${route.coin.id}`} coin={route.coin} side={route.side} step={route.step} initialWallet={route.wallet} />}
-          {!['home', 'token', 'assets', 'trade', 'order', 'deposit', 'withdraw', 'payments', 'settings', 'notifications', 'referral', 'gift-cards'].includes(view) && <ComingSoon view={view} />}
+          {!['home', 'token', 'assets', 'trade', 'order', 'deposit', 'withdraw', 'payments', 'settings', 'notifications', 'referral', 'gift-cards', 'swap'].includes(view) && <ComingSoon view={view} />}
         </main>
       </div>
 

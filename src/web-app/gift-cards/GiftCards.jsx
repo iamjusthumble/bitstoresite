@@ -8,6 +8,8 @@ import Rates from './Rates.jsx';
 import Sell from './Sell.jsx';
 import TradePage from './TradePage.jsx';
 import { brandById, gcHref } from './catalog.js';
+import { CountryGate } from './country.jsx';
+import { useCountry } from './store.js';
 import { OfflineBanner, Toaster } from './ui.jsx';
 
 // Gift cards in the web app (PRD GC01–GC11). Routes follow the PRD's deep links under #gift-cards:
@@ -46,8 +48,11 @@ export function gcParent(parts) {
 
 export default function GiftCards({ parts }) {
   const [a, b, c] = parts;
+  const [country] = useCountry();
   let page;
-  if (a === 'buy' && brandById[b]?.buy) page = <BuyBrand key={b} brand={brandById[b]} />;
+  // Cards depend on the country, so browsing, selling and rates ask for it first (orders and trades don't)
+  if (!country && ((a === 'buy' && b) || (a === 'sell' && b) || a === 'rates')) page = <CountryGate mode={a === 'buy' ? 'buy' : 'sell'} />;
+  else if (a === 'buy' && brandById[b]?.buy) page = <BuyBrand key={b} brand={brandById[b]} />;
   else if (a === 'checkout') page = <Checkout now={b === 'now'} />;
   else if (a === 'order') page = <OrderPage id={b} />;
   else if (a === 'sell' && (b === 'new' || brandById[b]?.sell)) page = <Sell brandId={b === 'new' ? null : b} step={b === 'new' ? 'brand' : c === 'cards' ? 'cards' : c === 'review' ? 'review' : 'details'} />;

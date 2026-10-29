@@ -18,13 +18,16 @@ export const CATEGORIES = [
   ['apps', 'App stores'],
 ];
 
+// Gift cards are issued per country and only work there, so the customer picks the country they're in first.
+// Buying and selling both show only the brands available for that country.
 export const COUNTRIES = {
-  US: { name: 'United States', short: 'US', currency: 'USD', symbol: '$' },
-  UK: { name: 'United Kingdom', short: 'UK', currency: 'GBP', symbol: '£' },
-  CA: { name: 'Canada', short: 'Canada', currency: 'CAD', symbol: 'C$' },
-  AU: { name: 'Australia', short: 'Australia', currency: 'AUD', symbol: 'A$' },
-  EU: { name: 'Euro area', short: 'Euro', currency: 'EUR', symbol: '€' },
+  US: { name: 'United States', short: 'US', currency: 'USD', symbol: '$', flag: '🇺🇸' },
+  UK: { name: 'United Kingdom', short: 'UK', currency: 'GBP', symbol: '£', flag: '🇬🇧' },
+  CA: { name: 'Canada', short: 'Canada', currency: 'CAD', symbol: 'C$', flag: '🇨🇦' },
+  AU: { name: 'Australia', short: 'Australia', currency: 'AUD', symbol: 'A$', flag: '🇦🇺' },
+  EU: { name: 'Euro area', short: 'Euro', currency: 'EUR', symbol: '€', flag: '🇪🇺' },
 };
+export const COUNTRY_IDS = Object.keys(COUNTRIES);
 
 // Sample exchange: what one unit of card currency costs in cedis when buying (margin included, no separate fee),
 // and the market rate used to convert payouts to USDT
@@ -67,37 +70,37 @@ const BRANDS_RAW = [
     about: 'Pay for any Netflix plan without a card. The balance is used for your monthly membership.',
     redeemUrl: 'https://www.netflix.com/redeem',
     redeem: steps('Go to netflix.com/redeem.', 'Sign in, or create an account.', 'Enter the code and select Redeem.'),
-    buy: { US: { denoms: [25, 30, 50, 100] }, UK: { denoms: [15, 25, 50] } },
+    buy: { US: { denoms: [25, 30, 50, 100] }, UK: { denoms: [15, 25, 50] }, CA: { denoms: [30, 50, 100] }, AU: { denoms: [30, 50, 100] }, EU: { denoms: [15, 25, 50] } },
   },
   {
     id: 'spotify', name: 'Spotify', category: 'entertainment', featured: true,
     about: 'Spotify Premium without a card: ad-free music and podcasts, offline listening.',
     redeemUrl: 'https://www.spotify.com/redeem',
     redeem: steps('Go to spotify.com/redeem.', 'Log in to your Spotify account.', 'Enter the code and select Redeem.'),
-    buy: { US: { denoms: [10, 30, 60, 99] } },
+    buy: { US: { denoms: [10, 30, 60, 99] }, UK: { denoms: [10, 30, 60] }, AU: { denoms: [30, 60] }, EU: { denoms: [10, 30, 60] } },
   },
   {
     id: 'playstation', name: 'PlayStation', category: 'gaming', featured: true, slow: true,
     about: 'Add funds to your PlayStation wallet for games, add-ons and PlayStation Plus.',
     redeemUrl: 'https://store.playstation.com/',
     redeem: steps('Sign in on store.playstation.com or open PlayStation Store on your console.', 'Open your profile menu and choose Redeem codes.', 'Enter the code and confirm.'),
-    buy: { US: { denoms: [10, 25, 50, 100], stock: { 100: 6 } } },
+    buy: { US: { denoms: [10, 25, 50, 100], stock: { 100: 6 } }, UK: { denoms: [10, 20, 50] }, CA: { denoms: [20, 50, 100] }, EU: { denoms: [10, 20, 50] } },
   },
   {
     id: 'xbox', name: 'Xbox', category: 'gaming', featured: true,
     about: 'Buy games, add-ons and Game Pass on Xbox and Windows.',
     redeemUrl: 'https://redeem.microsoft.com',
     redeem: steps('Go to redeem.microsoft.com.', 'Sign in with your Microsoft account.', 'Enter the 25-character code and select Next.'),
-    buy: { US: { denoms: [15, 25, 50, 100], stock: { 100: 0 } }, UK: { denoms: [10, 25, 50] } },
+    buy: { US: { denoms: [15, 25, 50, 100], stock: { 100: 0 } }, UK: { denoms: [10, 25, 50] }, CA: { denoms: [25, 50] }, AU: { denoms: [20, 50] } },
   },
   {
     id: 'apple', name: 'Apple', category: 'apps', featured: true, pin: false,
     about: 'One card for apps, games, iCloud+, Apple Music and more from the App Store and Apple.',
     redeemUrl: 'https://apps.apple.com/redeem',
     redeem: steps('Open the App Store and tap your photo.', 'Tap Redeem Gift Card or Code.', 'Enter the code manually or use the camera.'),
-    buy: { US: { denoms: [10, 25, 50, 100], custom: [10, 500] }, UK: { denoms: [10, 25, 50, 100] } },
+    buy: { US: { denoms: [10, 25, 50, 100], custom: [10, 500] }, UK: { denoms: [10, 25, 50, 100] }, CA: { denoms: [25, 50, 100] }, AU: { denoms: [20, 50, 100] }, EU: { denoms: [15, 25, 50, 100] } },
     sell: {
-      countries: { US: 11.2, UK: 14.2, CA: { rate: 8.1, paused: true } },
+      countries: { US: 11.2, UK: 14.2, CA: { rate: 8.1, paused: true }, AU: 7.6, EU: 12.3 },
       types: ['physical', 'ecode'], receipt: 'none', values: [25, 50, 100, 200, 500], bands: [[25, 99], [100, 500]],
       code: { label: 'Apple code', pattern: /^X[A-Z0-9]{15}$/, groups: [4, 4, 4, 4], hint: '16 characters starting with X' },
       back: true, median: 9,
@@ -109,7 +112,7 @@ const BRANDS_RAW = [
     about: 'Apps, games, books and subscriptions on Google Play.',
     redeemUrl: 'https://play.google.com/redeem',
     redeem: steps('Go to play.google.com/redeem, or open the Play Store app.', 'Sign in with your Google account.', 'Enter the code and select Redeem.'),
-    buy: { US: { denoms: [10, 25, 50, 100] } },
+    buy: { US: { denoms: [10, 25, 50, 100] }, UK: { denoms: [10, 25, 50] }, CA: { denoms: [25, 50, 100] }, EU: { denoms: [15, 25, 50] } },
     sell: {
       countries: { US: 9.6 },
       types: ['physical', 'ecode'], receipt: 'none', values: [25, 50, 100, 200], bands: [[25, 99], [100, 200]],
@@ -123,9 +126,9 @@ const BRANDS_RAW = [
     about: 'Shop millions of items on Amazon. The balance never expires.',
     redeemUrl: 'https://www.amazon.com/redeem',
     redeem: steps('Go to amazon.com/redeem.', 'Sign in to your Amazon account.', 'Enter the claim code and select Apply to your balance.'),
-    buy: { US: { denoms: [25, 50, 100], custom: [5, 500] }, UK: { denoms: [10, 25, 50, 100] } },
+    buy: { US: { denoms: [25, 50, 100], custom: [5, 500] }, UK: { denoms: [10, 25, 50, 100] }, CA: { denoms: [25, 50, 100] }, AU: { denoms: [20, 50, 100] }, EU: { denoms: [25, 50, 100] } },
     sell: {
-      countries: { US: 10.4, UK: 13.1, CA: 7.4 },
+      countries: { US: 10.4, UK: 13.1, CA: 7.4, AU: 6.9, EU: 11.6 },
       types: ['physical', 'ecode'], receipt: 'optional', values: [25, 50, 100, 200, 500], bands: [[25, 99], [100, 500]],
       code: { label: 'Claim code', pattern: /^[A-Z0-9]{14,15}$/, groups: [4, 6, 5], hint: '14 or 15 letters and numbers' },
       back: true, median: 12,
@@ -137,9 +140,9 @@ const BRANDS_RAW = [
     about: 'Add funds to your Steam Wallet for games, software and hardware on Steam.',
     redeemUrl: 'https://store.steampowered.com/account/redeemwalletcode',
     redeem: steps('Go to store.steampowered.com/account/redeemwalletcode.', 'Sign in to Steam.', 'Enter the code and select Continue.'),
-    buy: { US: { denoms: [20, 50, 100] } },
+    buy: { US: { denoms: [20, 50, 100] }, UK: { denoms: [10, 20, 50] }, EU: { denoms: [20, 50, 100] } },
     sell: {
-      countries: { US: 10.8, UK: 13.6, EU: 11.9 },
+      countries: { US: 10.8, UK: 13.6, CA: 7.8, AU: 7.1, EU: 11.9 },
       types: ['physical', 'ecode'], receipt: 'none', range: [20, 500], bands: [[20, 99], [100, 500]],
       code: { label: 'Steam code', pattern: /^[A-Z0-9]{15}$/, groups: [5, 5, 5], hint: '15 letters and numbers' },
       median: 8,
@@ -151,7 +154,7 @@ const BRANDS_RAW = [
     about: 'Pay for Uber rides and Uber Eats orders in the US.',
     redeemUrl: 'https://www.uber.com/us/en/gift-cards/',
     redeem: steps('Open the Uber app and go to Wallet.', 'Tap Add Payment Method, then Gift Card.', 'Enter the code and tap Add.'),
-    buy: { US: { denoms: [25, 50, 100] } },
+    buy: { US: { denoms: [25, 50, 100] }, UK: { denoms: [25, 50] }, AU: { denoms: [25, 50] } },
   },
   {
     id: 'uber-eats', name: 'Uber Eats', category: 'food',
@@ -165,7 +168,7 @@ const BRANDS_RAW = [
     about: 'Stays and experiences anywhere Airbnb operates.',
     redeemUrl: 'https://www.airbnb.com/giftcards',
     redeem: steps('Sign in on airbnb.com and open Account.', 'Go to Payments, then Gift credit.', 'Select Add gift card and enter the code.'),
-    buy: { US: { denoms: [50, 100, 200] } },
+    buy: { US: { denoms: [50, 100, 200] }, UK: { denoms: [50, 100] }, CA: { denoms: [50, 100] }, AU: { denoms: [50, 100] }, EU: { denoms: [50, 100] } },
   },
   {
     id: 'nike', name: 'Nike', category: 'shopping',
@@ -179,14 +182,14 @@ const BRANDS_RAW = [
     about: 'Get Robux or a Roblox Premium subscription.',
     redeemUrl: 'https://www.roblox.com/redeem',
     redeem: steps('Go to roblox.com/redeem.', 'Log in to your Roblox account.', 'Enter the PIN and select Redeem.'),
-    buy: { US: { denoms: [10, 25, 50] } },
+    buy: { US: { denoms: [10, 25, 50] }, UK: { denoms: [10, 25] }, CA: { denoms: [10, 25] }, AU: { denoms: [10, 25] }, EU: { denoms: [10, 25] } },
   },
   {
     id: 'nintendo', name: 'Nintendo', category: 'gaming',
     about: 'Games and add-ons on the Nintendo eShop.',
     redeemUrl: 'https://ec.nintendo.com/redeem',
     redeem: steps('Go to ec.nintendo.com/redeem.', 'Sign in with your Nintendo Account.', 'Enter the 16-character code.'),
-    buy: { US: { denoms: [20, 35, 50] } },
+    buy: { US: { denoms: [20, 35, 50] }, UK: { denoms: [15, 25, 50] }, EU: { denoms: [15, 25, 50] } },
   },
   {
     id: 'fortnite', name: 'Fortnite', category: 'gaming',
@@ -238,7 +241,7 @@ const BRANDS_RAW = [
   {
     id: 'razer-gold', name: 'Razer Gold', category: 'gaming',
     sell: {
-      countries: { US: 10.9 },
+      countries: { US: 10.9, UK: 13.4, EU: 11.8 },
       types: ['ecode'], receipt: 'none', values: [10, 20, 50, 100, 200], bands: [[10, 49], [50, 200]],
       code: { label: 'PIN', pattern: /^[A-Z0-9]{14}$/, groups: [5, 5, 4], hint: '14 letters and numbers' }, serial: true,
       median: 7,
@@ -266,7 +269,7 @@ const BRANDS_RAW = [
   {
     id: 'ebay', name: 'eBay', category: 'shopping',
     sell: {
-      countries: { US: 9.4 },
+      countries: { US: 9.4, UK: 12.2 },
       types: ['physical', 'ecode'], receipt: 'none', values: [25, 50, 100, 200], bands: [[25, 99], [100, 200]],
       code: { label: 'Redemption code', pattern: /^[A-Z0-9]{13}$/, groups: [4, 4, 5], hint: '13 letters and numbers' },
       back: true, median: 16,
@@ -288,6 +291,10 @@ export const BRANDS = BRANDS_RAW.map((b) => ({ ...b, art: artFor(b.id), scamRisk
 export const brandById = Object.fromEntries(BRANDS.map((b) => [b.id, b]));
 export const BUY_BRANDS = BRANDS.filter((b) => b.buy);
 export const SELL_BRANDS = BRANDS.filter((b) => b.sell).sort((a, b) => a.name.localeCompare(b.name));
+
+// What's on offer for a country: cards we sell there, and cards from there we buy
+export const buyBrandsIn = (country) => BUY_BRANDS.filter((b) => b.buy[country]);
+export const sellBrandsIn = (country) => SELL_BRANDS.filter((b) => b.sell.countries[country]);
 export const categoryName = Object.fromEntries(CATEGORIES);
 
 // Money
@@ -308,9 +315,10 @@ export function buyCountries(brand) {
   return Object.keys(brand.buy || {});
 }
 
-// Smallest price across countries, for "From GH₵ …"
-export function fromPrice(brand) {
-  return Math.min(...buyCountries(brand).map((c) => buyPrice(c, Math.min(...brand.buy[c].denoms, ...(brand.buy[c].custom ? [brand.buy[c].custom[0]] : [])))));
+// Smallest price in a country (or across all of them), for "From GH₵ …"
+export function fromPrice(brand, country) {
+  const list = country && brand.buy[country] ? [country] : buyCountries(brand);
+  return Math.min(...list.map((c) => buyPrice(c, Math.min(...brand.buy[c].denoms, ...(brand.buy[c].custom ? [brand.buy[c].custom[0]] : [])))));
 }
 
 // Units left at a value: Infinity when the supplier reports plenty

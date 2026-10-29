@@ -120,7 +120,8 @@ export function Row({ label, children, strong }) {
 
 export const dash = <span className="font-normal text-wa-muted">—</span>;
 
-// Review and Done sit in a native dialog over the form: it traps focus and makes the page behind inert
+// Review and Done sit in a native dialog over the form: it traps focus and makes the page behind inert.
+// Without `onClose` (e.g. while something is processing) it can't be dismissed and shows no close button.
 export function Modal({ labelledBy, onClose, className, children }) {
   const ref = useRef(null);
 
@@ -141,10 +142,10 @@ export function Modal({ labelledBy, onClose, className, children }) {
       // Escape asks to close; the route decides, so the dialog and the URL can't disagree
       onCancel={(e) => {
         e.preventDefault();
-        onClose();
+        onClose?.();
       }}
       // Only the backdrop reports the dialog itself as the target
-      onClick={(e) => e.target === ref.current && onClose()}
+      onClick={(e) => e.target === ref.current && onClose?.()}
       className={cx(
         'm-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] animate-[pop-in_0.2s_ease-out] overflow-y-auto rounded-2xl border border-wa-line bg-wa-card text-wa-text shadow-(--wa-shadow) outline-none backdrop:animate-[fade_0.2s_ease-out] backdrop:bg-[#000b1e]/70 backdrop:backdrop-blur-[2px]',
         className,
@@ -153,9 +154,11 @@ export function Modal({ labelledBy, onClose, className, children }) {
       <div className="relative p-8 max-sm:p-5">
         {/* The page behind a dialog is inert, so the dialog carries its own copy button */}
         <FigmaCopyButton className="absolute right-14 top-5.5 max-sm:hidden">Copy</FigmaCopyButton>
-        <button type="button" aria-label="Close" onClick={onClose} className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-wa-muted transition-colors duration-150 hover:bg-wa-pill hover:text-wa-text">
-          <Close size={20} />
-        </button>
+        {onClose && (
+          <button type="button" aria-label="Close" onClick={onClose} className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-wa-muted transition-colors duration-150 hover:bg-wa-pill hover:text-wa-text">
+            <Close size={20} />
+          </button>
+        )}
         {children}
       </div>
     </dialog>

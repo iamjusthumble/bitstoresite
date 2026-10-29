@@ -157,3 +157,7 @@ export const SAMPLE_REFERRALS = {
 
 // From the Figma: "Minimum withdrawal amount is $100"
 export const REFERRAL_MIN_WITHDRAWAL = 100;
+
+// Sample fiat (USD) balance for the Swap page's Fiat tab; the Figma's 200,000 USD placeholder is out of line with
+// the sample account, so a smaller figure is used. Swaps from it are kept in this browser.
+export const SAMPLE_FIAT_USD = 500;
