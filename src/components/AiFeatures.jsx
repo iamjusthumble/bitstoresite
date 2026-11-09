@@ -111,7 +111,7 @@ function AnalysisVisual() {
   );
 }
 
-const features = [
+export const features = [
   {
     tab: 'Intelligent Chats',
     title: 'Intelligent Chat',

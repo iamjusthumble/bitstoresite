@@ -38,7 +38,7 @@ const primaryColumns = [
       ['API Docs', links.apis],
       ['Wallet APIs (Server &\nEmbedded Wallets)', links.apis],
       ['Compliance, KYB/ KYC', links.compliance],
-      ['Onramp & OTramp', links.apis],
+      ['Onramp & Offramp', links.apis],
       ['Trade API', links.apis],
       ['Data & Prices API', links.apis],
       ['Webhooks & Notifications', links.apis],
@@ -142,20 +142,23 @@ function VersionSwitch() {
 
 // The version switch only applies to the home page layouts
 export default function Footer({ showVersionSwitch = true }) {
+  const { version } = useVersion();
+  // V3 leaves LENS sign-in out of the footer
+  const primary = version === '3' ? primaryColumns.map((c) => ({ ...c, items: c.items.filter(([label]) => label !== 'Sign in to LENS') })) : primaryColumns;
   return (
-    <footer className="bg-navy px-[92px] py-20 text-white light:bg-[#f7f7fc] light:text-black max-lg:px-8 max-lg:py-16 max-sm:px-5 max-sm:py-14">
+    <footer className="bg-navy px-[92px] py-20 text-white light:bg-[#f7f7fc] light:text-black v3:bg-v3-bg-2 v3:text-v3-ink v3:light:bg-v3-bg-2 max-lg:px-8 max-lg:py-16 max-sm:px-5 max-sm:py-14">
       <div className="reveal mx-auto flex max-w-[1256px] justify-between gap-10 max-lg:flex-col">
         <div className="flex flex-col gap-[21px]">
           <Logo />
           <p className="flex gap-2 text-base leading-[1.2]"><span>Build.</span><span>Trade.</span><span>Move Value</span></p>
           <StoreBadges />
         </div>
-        <FooterColumns columns={primaryColumns} />
+        <FooterColumns columns={primary} />
       </div>
       <div className="mx-auto flex max-w-[1256px] justify-end max-lg:justify-start">
-        <FooterColumns columns={secondaryColumns} className="mt-10 border-t border-[#03163e] pt-10" />
+        <FooterColumns columns={secondaryColumns} className="mt-10 border-t border-[#03163e] pt-10 v3:border-v3-line" />
       </div>
-      <div className="mx-auto mt-10 flex max-w-[1256px] items-center justify-between gap-6 border-t border-[#03163e] pt-[54px] max-sm:flex-col max-sm:items-start max-sm:pt-8">
+      <div className="mx-auto mt-10 flex max-w-[1256px] items-center justify-between gap-6 border-t border-[#03163e] pt-[54px] v3:border-v3-line max-sm:flex-col max-sm:items-start max-sm:pt-8">
         <p className="font-nunito text-xl font-semibold leading-[1.2] text-[#6f7794] max-sm:text-base">© 2026 Mybitstore, Inc. All rights reserved.</p>
         {showVersionSwitch && <VersionSwitch />}
         <div className="relative grid h-3.5 w-[146px] grid-cols-4">

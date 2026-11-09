@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-// Two layouts of the same site live side by side; the footer switch flips between them.
-// `?v=1` / `?v=2` in the URL wins (handy for sharing a specific version), then the visitor's last pick.
-export const VERSIONS = ['1', '2'];
+// Three layouts of the same site live side by side; the footer switch flips between them.
+// `?v=1|2|3` in the URL wins (handy for sharing a specific version), then the visitor's last pick.
+export const VERSIONS = ['1', '2', '3'];
 const STORAGE_KEY = 'site-version';
 const DEFAULT_VERSION = '2';
 

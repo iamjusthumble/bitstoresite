@@ -11,7 +11,7 @@ import ThemedImg from './ThemedImg.jsx';
 import SectionHead from './Section.jsx';
 import { section } from '../ui.js';
 
-const items = [
+export const items = [
   {
     icon: lock,
     iconLight: lockLight,

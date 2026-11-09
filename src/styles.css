@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap');
 @import 'tailwindcss';
 
 /* Only scan the app's own sources for class names */
@@ -13,6 +13,7 @@
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 @custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
 @custom-variant v2 (&:where([data-version='2'], [data-version='2'] *));
+@custom-variant v3 (&:where([data-version='3'], [data-version='3'] *));
 @custom-variant revealed (&:where(.is-visible, .is-visible *));
 
 @theme {
@@ -383,3 +384,97 @@
 @keyframes ll-pulse { from { transform: scale(1); opacity: 0.9; } to { transform: scale(3.2); opacity: 0; } }
 @keyframes ll-iris { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(30deg) scale(0.9); } }
 @keyframes gc-ring { from { opacity: 1; scale: 0.9; } to { opacity: 0; scale: 1.35; } }
+
+/* ——— Version 3: glass and aurora, scroll-driven motion (src/v3) ——— */
+@theme inline {
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --color-v3-bg: var(--v3-bg);
+  --color-v3-bg-2: var(--v3-bg-2);
+  --color-v3-ink: var(--v3-ink);
+  --color-v3-muted: var(--v3-muted);
+  --color-v3-soft: var(--v3-soft);
+  --color-v3-line: var(--v3-line);
+  --color-v3-glass: var(--v3-glass);
+  --color-v3-glass-2: var(--v3-glass-2);
+  --color-v3-accent: var(--v3-accent);
+  --color-v3-accent-2: var(--v3-accent-2);
+  --color-v3-mint: var(--v3-mint);
+}
+:root {
+  --v3-bg: #03050d;
+  --v3-bg-2: #070b19;
+  --v3-ink: #eef1fb;
+  --v3-muted: #8e96b2;
+  --v3-soft: #c3c9dd;
+  --v3-line: rgba(255, 255, 255, 0.09);
+  --v3-glass: rgba(255, 255, 255, 0.045);
+  --v3-glass-2: rgba(255, 255, 255, 0.08);
+  --v3-accent: #5b8bff;
+  --v3-accent-2: #9b7bff;
+  --v3-mint: #47e5bc;
+  --v3-aurora-1: rgba(47, 96, 224, 0.55);
+  --v3-aurora-2: rgba(132, 92, 255, 0.4);
+  --v3-aurora-3: rgba(40, 210, 190, 0.22);
+  --v3-glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --v3-glass-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.8);
+  --v3-grid: rgba(255, 255, 255, 0.045);
+}
+:root[data-theme='light'] {
+  --v3-bg: #f4f6fc;
+  --v3-bg-2: #eaeef9;
+  --v3-ink: #0a1024;
+  --v3-muted: #5d6684;
+  --v3-soft: #3a4260;
+  --v3-line: rgba(10, 16, 36, 0.08);
+  --v3-glass: rgba(255, 255, 255, 0.55);
+  --v3-glass-2: rgba(255, 255, 255, 0.75);
+  --v3-accent: #2f60e0;
+  --v3-accent-2: #7a55f0;
+  --v3-mint: #0fae86;
+  --v3-aurora-1: rgba(80, 125, 255, 0.35);
+  --v3-aurora-2: rgba(160, 120, 255, 0.28);
+  --v3-aurora-3: rgba(40, 200, 180, 0.18);
+  --v3-glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(10, 16, 36, 0.06);
+  --v3-glass-shadow: 0 30px 70px -34px rgba(20, 40, 100, 0.28);
+  --v3-grid: rgba(10, 16, 36, 0.05);
+}
+/* Lenis does the smoothing in V3, so native smooth scrolling would fight it */
+html[data-version='3'] { scroll-behavior: auto; background: var(--v3-bg); }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+@utility glass {
+  background: var(--v3-glass);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow: var(--v3-glass-edge), var(--v3-glass-shadow);
+}
+@utility glass-strong {
+  background: var(--v3-glass-2);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: var(--v3-glass-edge), var(--v3-glass-shadow);
+}
+/* Accent words in the Mybitstore primary blue */
+@utility text-aurora {
+  color: var(--color-brand);
+}
+
+@keyframes v3-aurora { 0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); } 50% { transform: translate3d(6%, -4%, 0) rotate(12deg) scale(1.12); } 100% { transform: translate3d(-4%, 5%, 0) rotate(-8deg) scale(0.96); } }
+@keyframes v3-fade-up { from { opacity: 0; transform: translate3d(0, 8px, 0); } }
+@keyframes v3-marquee { to { transform: translate3d(-50%, 0, 0); } }
+@keyframes v3-word { from { opacity: 0; transform: translate3d(0, 0.6em, 0) rotate(4deg); filter: blur(8px); } }
+@keyframes v3-sheen { to { background-position: -200% 0; } }
+@keyframes v3-orbit { to { transform: rotate(360deg); } }
+@keyframes v3-counter { to { transform: rotate(-360deg); } }
+@keyframes v3-pulse { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(2.6); opacity: 0; } }
+@keyframes v3-curtain { 0% { clip-path: inset(0 0 0 0); } 100% { clip-path: inset(0 0 100% 0); } }
+@keyframes v3-logo-in { 0% { opacity: 0; transform: scale(0.85); filter: blur(10px); } 60% { opacity: 1; transform: scale(1); filter: blur(0); } }
+@keyframes v3-float { 50% { transform: translate3d(0, -14px, 0); } }
+@keyframes v3-gradient { to { background-position: 200% 0; } }
+@keyframes v3-scroll-dot { 0% { transform: translateY(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(14px); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-version='3'] *, [data-version='3'] *::before, [data-version='3'] *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}

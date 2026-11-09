@@ -230,7 +230,7 @@ function ReportingView() {
   );
 }
 
-function LensWindow({ module, title, children }) {
+export function LensWindow({ module, title, children }) {
   return (
     <div
       aria-hidden="true"
@@ -271,7 +271,7 @@ function LensWindow({ module, title, children }) {
   );
 }
 
-const rows = [
+export const rows = [
   {
     module: 'monitoring',
     title: 'Transaction Monitoring',

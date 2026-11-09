@@ -10,7 +10,7 @@ import { Close, Menu } from './icons.jsx';
 import ThemedImg from './ThemedImg.jsx';
 import { btn, cx } from '../ui.js';
 
-const menus = [
+export const menus = [
   {
     label: 'Individuals',
     items: [

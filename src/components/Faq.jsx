@@ -6,7 +6,7 @@ import ThemedImg from './ThemedImg.jsx';
 import SectionHead from './Section.jsx';
 import { section, text } from '../ui.js';
 
-const faqs = [
+export const faqs = [
   {
     q: 'How do I create an account?',
     a: 'Sign up with your email address, verify it, and turn on two-factor authentication for extra security. It only takes a few minutes.',

@@ -14,7 +14,7 @@ import SectionHead from './Section.jsx';
 import { cx, section } from '../ui.js';
 
 // art: box size, plus the image's framing inside it as [top, left, width, height] percentages
-const groups = {
+export const groups = {
   Individuals: [
     {
       name: 'Gift Cards',
@@ -77,7 +77,7 @@ const groups = {
   ],
 };
 
-function ProductArt({ img, art }) {
+export function ProductArt({ img, art }) {
   let imgStyle;
   if (art.crop) {
     const [top, left, width, height] = art.crop;

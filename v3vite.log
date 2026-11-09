@@ -1,0 +1,10 @@
+9:12:28 AM [vite] (client) Re-optimizing dependencies because lockfile has changed
+
+  VITE v8.3.1  ready in 382 ms
+
+  ➜  Local:   http://localhost:5199/
+  ➜  Network: use --host to expose
+9:14:34 AM [vite] (client) hmr update /src/styles.css, /src/v3/ui.jsx
+9:14:34 AM [vite] (client) hmr update /src/v3/LensStory.jsx, /src/styles.css
+9:15:06 AM [vite] (client) hmr update /src/v3/MarketsV3.jsx, /src/styles.css
+9:18:00 AM [vite] (client) hmr update /src/v3/AppV3.jsx, /src/styles.css
