@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap');
 @import 'tailwindcss';
 
 /* Only scan the app's own sources for class names */
@@ -14,6 +14,7 @@
 @custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
 @custom-variant v2 (&:where([data-version='2'], [data-version='2'] *));
 @custom-variant v3 (&:where([data-version='3'], [data-version='3'] *));
+@custom-variant v4 (&:where([data-version='4'], [data-version='4'] *));
 @custom-variant revealed (&:where(.is-visible, .is-visible *));
 
 @theme {
@@ -478,3 +479,86 @@ html.lenis, html.lenis body { height: auto; }
 @media (prefers-reduced-motion: reduce) {
   [data-version='3'] *, [data-version='3'] *::before, [data-version='3'] *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* ——— Version 4: V3 refined. Neutral surfaces, Mybitstore blue as the only accent, quieter motion (src/v4) ——— */
+@theme inline {
+  --color-v4-bg: var(--v4-bg);
+  --color-v4-bg-2: var(--v4-bg-2);
+  --color-v4-card: var(--v4-card);
+  --color-v4-raise: var(--v4-raise);
+  --color-v4-ink: var(--v4-ink);
+  --color-v4-soft: var(--v4-soft);
+  --color-v4-muted: var(--v4-muted);
+  --color-v4-faint: var(--v4-faint);
+  --color-v4-line: var(--v4-line);
+  --color-v4-line-2: var(--v4-line-2);
+  --color-v4-accent: var(--v4-accent);
+  --color-v4-accent-ink: var(--v4-accent-ink);
+  /* Geist: the clean grotesque most crypto and fintech brands lean on */
+  --font-v4: 'Geist', 'Inter', system-ui, sans-serif;
+  --ease-v4: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-v4-io: cubic-bezier(0.65, 0, 0.35, 1);
+}
+:root {
+  --v4-bg: #07080b;
+  --v4-bg-2: #0b0d11;
+  --v4-card: #0f1116;
+  --v4-raise: #15181f;
+  --v4-ink: #f3f5f9;
+  --v4-soft: #c4c9d4;
+  --v4-muted: #8a909d;
+  --v4-faint: #5b616d;
+  --v4-line: rgba(255, 255, 255, 0.07);
+  --v4-line-2: rgba(255, 255, 255, 0.12);
+  --v4-accent: #2f60e0;
+  /* The brand blue, lifted just enough to read as text on the dark background */
+  --v4-accent-ink: #7095f5;
+  --v4-glow: rgba(47, 96, 224, 0.28);
+  --v4-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.7);
+  --v4-panel: rgba(17, 19, 25, 0.92);
+}
+:root[data-theme='light'] {
+  --v4-bg: #fbfbfd;
+  --v4-bg-2: #f4f5f8;
+  --v4-card: #ffffff;
+  --v4-raise: #f1f3f7;
+  --v4-ink: #0a0c12;
+  --v4-soft: #2f3542;
+  --v4-muted: #5f6676;
+  --v4-faint: #9aa0ad;
+  --v4-line: rgba(10, 12, 18, 0.08);
+  --v4-line-2: rgba(10, 12, 18, 0.14);
+  --v4-accent: #2f60e0;
+  --v4-accent-ink: #2f60e0;
+  --v4-glow: rgba(47, 96, 224, 0.16);
+  --v4-shadow: 0 24px 60px -28px rgba(16, 24, 48, 0.22);
+  --v4-panel: rgba(255, 255, 255, 0.94);
+}
+html[data-version='4'] { scroll-behavior: auto; background: var(--v4-bg); }
+
+/* A flat card: one surface colour and a hairline */
+@utility v4-card {
+  background: var(--v4-card);
+  box-shadow: inset 0 0 0 1px var(--v4-line);
+}
+
+@keyframes v4-rise { from { opacity: 0; transform: translate3d(0, 0.5em, 0); } }
+@keyframes v4-up { from { transform: translate3d(0, 105%, 0); } }
+@keyframes v4-fade { from { opacity: 0; } }
+@keyframes v4-fade-up { from { opacity: 0; transform: translate3d(0, 10px, 0); } }
+@keyframes v4-float { 50% { transform: translate3d(0, -10px, 0); } }
+@keyframes v4-ping { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(2.4); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-version='4'] *, [data-version='4'] *::before, [data-version='4'] *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}
+@keyframes v4-marquee { to { transform: translate3d(-50%, 0, 0); } }
+
+@keyframes v4-dash { to { stroke-dashoffset: -40; } }
+@keyframes v4-draw { from { stroke-dashoffset: 1; } }
+@keyframes v4-phone-in { from { opacity: 0; transform: translate3d(0, 80px, 0); } }
+@keyframes v4-type { to { max-width: 200px; } }
+@keyframes v4-blink { 50% { opacity: 0; } }
+@keyframes v4-pop { from { opacity: 0; transform: scale(0.4); } }
+@keyframes v4-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes v4-toast { from { opacity: 0; transform: translate3d(0, -24px, 0) scale(0.94); } }

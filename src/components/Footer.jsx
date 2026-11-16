@@ -6,7 +6,7 @@ import { VERSIONS, useVersion } from '../version.js';
 import { Logo } from './Header.jsx';
 import { cx } from '../ui.js';
 
-const primaryColumns = [
+export const primaryColumns = [
   {
     title: 'Product',
     items: [
@@ -47,7 +47,7 @@ const primaryColumns = [
   },
 ];
 
-const secondaryColumns = [
+export const secondaryColumns = [
   {
     title: 'Company',
     items: [
