@@ -1,6 +1,7 @@
 import React from 'react';
 import { links } from '../links.js';
 import logo from '../assets/logo.svg';
+import iso from '../assets/iso-27001.png';
 import { StoreBadges, primaryColumns, secondaryColumns } from '../components/Footer.jsx';
 import { VERSIONS, useVersion } from '../version.js';
 import { cx } from '../ui.js';
@@ -51,6 +52,13 @@ export default function FooterV4() {
             </a>
             <p className="text-[15px] leading-6 text-v4-muted">Build. Trade. Move value.</p>
             <StoreBadges />
+            {/* The certification as shown on mybitstore.com */}
+            <div className="mt-2 flex items-center gap-3.5">
+              <img src={iso} alt="ISO 27001 certified" width="46" height="46" className="size-[46px] shrink-0" />
+              <p className="max-w-[260px] text-[13px] leading-5 text-v4-muted">
+                Mybitstore is ISO/IEC 27001:2022 (Information Security Management System) certified.
+              </p>
+            </div>
           </div>
           <nav aria-label="Footer" className="grid grid-cols-3 gap-x-8 gap-y-12 max-sm:grid-cols-2">
             {COLUMNS.map((col) => (
