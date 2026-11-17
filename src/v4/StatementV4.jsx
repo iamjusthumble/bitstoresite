@@ -24,7 +24,7 @@ export default function StatementV4() {
   const lit = (i) => `clamp(0, calc(var(--p, 0) * ${n + 4} - ${i + 1}), 1)`;
 
   return (
-    <section ref={ref} className="relative h-[220svh]" aria-label={WORDS.join(' ')}>
+    <section ref={ref} className="relative h-[170svh] max-lg:h-[150svh]" aria-label={WORDS.join(' ')}>
       <div className="sticky top-0 flex h-svh items-center overflow-hidden">
         {/* Dot field, fading out toward the edges */}
         <div

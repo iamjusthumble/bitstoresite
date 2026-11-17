@@ -1,6 +1,6 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React from 'react';
 import { ProductArt, groups } from '../components/Products.jsx';
-import { productCopy } from '../v3/copy.js';
+import { productCopy } from './copy.js';
 import merchantPay from '../assets/people/merchant-pay.jpg';
 import apple from '../assets/gift-cards/apple.webp';
 import amazon from '../assets/gift-cards/amazon.webp';
@@ -12,40 +12,29 @@ import { cx } from '../ui.js';
 import { useSpotlight } from '../v3/motion.js';
 import { ArrowUpRight, Card, Heading, Rise, container, section } from './ui.jsx';
 
-// Two audiences, one layout: the lead product on a large visual card, the other three stacked beside it
-const SETS = [
-  { key: 'Individuals', label: 'For you' },
-  { key: 'Businesses', label: 'For business', photo: merchantPay, pos: '60% 50%' },
-].map((s) => ({ ...s, items: groups[s.key].map((p) => ({ ...p, copy: productCopy[p.name] ?? p.copy })) }));
-// Merchant Business Suite leads for businesses
-SETS[1].items = [SETS[1].items[1], SETS[1].items[0], ...SETS[1].items.slice(2)];
+// Two sections, one per audience. Each leads with a large visual card and sets two smaller ones beside it.
+// Learn & Earn and Crypto APIs are left out of V4.
+const HIDDEN = ['Learn & Earn', 'Crypto APIs'];
+const pick = (key) => groups[key].filter((p) => !HIDDEN.includes(p.name)).map((p) => ({ ...p, copy: productCopy[p.name] ?? p.copy }));
+const lead = (list, name) => [list.find((p) => p.name === name), ...list.filter((p) => p.name !== name)];
 
-function Toggle({ value, onChange }) {
-  const box = useRef(null);
-  const [rect, setRect] = useState(null);
-  useLayoutEffect(() => {
-    const el = box.current?.querySelector('[data-on="true"]');
-    if (el) setRect({ x: el.offsetLeft, w: el.offsetWidth });
-  }, [value]);
-  return (
-    <div ref={box} role="tablist" aria-label="Who the products are for" className="relative flex gap-1 rounded-full bg-v4-card p-1 shadow-[inset_0_0_0_1px_var(--v4-line-2)]">
-      {rect && <span aria-hidden="true" className="absolute inset-y-1 rounded-full bg-v4-ink transition-[left,width] duration-500 ease-v4" style={{ left: rect.x, width: rect.w }} />}
-      {SETS.map((s, i) => (
-        <button
-          key={s.key}
-          type="button"
-          role="tab"
-          aria-selected={value === i}
-          data-on={value === i}
-          onClick={() => onChange(i)}
-          className={cx('relative h-10 rounded-full px-5 text-[14px] font-medium transition-colors duration-500', value === i ? 'text-v4-bg' : 'text-v4-muted hover:text-v4-ink')}
-        >
-          {s.label}
-        </button>
-      ))}
-    </div>
-  );
-}
+const SETS = [
+  {
+    id: 'products',
+    parts: ['Tools for', { dim: 'you.' }],
+    lead: 'Buy and sell gift cards, earn from referrals, and grow your credit score as you trade.',
+    items: lead(pick('Individuals'), 'Gift Cards'),
+  },
+  {
+    id: 'business',
+    parts: ['Tools for', { dim: 'your business.' }],
+    lead: 'Accept crypto payments, stay on top of tax and compliance, and launch your own token.',
+    items: lead(pick('Businesses'), 'Merchant Business Suite'),
+    photo: merchantPay,
+    pos: '60% 50%',
+    flip: true,
+  },
+];
 
 // Real gift cards in a tilted wall, each floating on its own beat; hovering lifts the wall a little
 const CARDS = [amazon, apple, steam, spotify, playstation, netflix];
@@ -67,7 +56,7 @@ function GiftFan() {
 // The lead product: a picture of exactly what it is, with the details over a soft shade
 function Feature({ set, p }) {
   return (
-    <a href={p.href} className="group/f relative isolate flex min-h-[560px] flex-col justify-end overflow-hidden rounded-[28px] p-8 text-white max-lg:min-h-[460px] max-sm:min-h-[400px] max-sm:p-6">
+    <a href={p.href} className="group/f relative isolate flex h-full min-h-[440px] flex-col justify-end overflow-hidden rounded-[28px] p-8 text-white max-lg:min-h-[400px] max-sm:min-h-[360px] max-sm:p-6">
       {set.photo ? (
         <img src={set.photo} alt="" className="absolute inset-0 -z-1 size-full object-cover transition-transform duration-[1400ms] ease-v4 group-hover/f:scale-[1.04]" style={{ objectPosition: set.pos }} />
       ) : (
@@ -106,34 +95,29 @@ function Item({ p }) {
   );
 }
 
-export default function ProductsV4() {
-  const [index, setIndex] = useState(0);
+function ProductSet({ set }) {
   const spot = useSpotlight();
-  const set = SETS[index];
-  const [lead, ...rest] = set.items;
-
+  const [first, ...rest] = set.items;
   return (
-    <section id="products" className={section}>
+    <section id={set.id} className={section}>
       <div className={container} ref={spot}>
-        <div className="flex flex-wrap items-end justify-between gap-8">
-          <Heading size="md" parts={['Tools for you and', { dim: 'your business.' }]} />
-          <Rise delay={150}><Toggle value={index} onChange={setIndex} /></Rise>
-        </div>
-
-        {/* A new key replays the entrance, so switching audiences reads as a fresh set */}
-        <Rise className="mt-12">
-          <div key={set.key} className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-4 max-lg:grid-cols-[minmax(0,1fr)]">
-            <div className="animate-[v4-fade-up_800ms_cubic-bezier(0.16,1,0.3,1)_backwards]"><Feature set={set} p={lead} /></div>
-            <div className="flex flex-col gap-4">
-              {rest.map((p, i) => (
-                <div key={p.name} className="flex flex-1 animate-[v4-fade-up_800ms_cubic-bezier(0.16,1,0.3,1)_backwards]" style={{ animationDelay: `${80 + i * 80}ms` }}>
-                  <Item p={p} />
-                </div>
-              ))}
-            </div>
+        <Heading size="md" parts={set.parts} lead={set.lead} />
+        <div className={cx('mt-10 grid gap-4 max-lg:grid-cols-[minmax(0,1fr)]', set.flip ? 'grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]' : 'grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]')}>
+          {/* The businesses set mirrors the first, so the page alternates as you scroll */}
+          <Rise className={cx('h-full', set.flip && 'lg:order-2')}><Feature set={set} p={first} /></Rise>
+          <div className="flex flex-col gap-4">
+            {rest.map((p, i) => (
+              <Rise key={p.name} delay={120 + i * 100} className="flex flex-1">
+                <Item p={p} />
+              </Rise>
+            ))}
           </div>
-        </Rise>
+        </div>
       </div>
     </section>
   );
 }
+
+// Shown apart on the page: individuals before the AI assistant, businesses before Lens
+export const ProductsForYou = () => <ProductSet set={SETS[0]} />;
+export const ProductsForBusiness = () => <ProductSet set={SETS[1]} />;

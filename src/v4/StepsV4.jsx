@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { links } from '../links.js';
 import btc from '../assets/coin-btc.svg';
 import logo from '../assets/logo.svg';
 import { cx } from '../ui.js';
-import { reducedMotion, useInView } from '../v3/motion.js';
-import { steps as STEPS } from '../v3/copy.js';
+import { useInView } from '../v3/motion.js';
+import { steps as STEPS } from './copy.js';
 import { Check, Heading, PrimaryButton, Rise, container, section } from './ui.jsx';
 
-const STEP_MS = 4800;
 
 // The app screens are drawn in the app's own light palette, whatever the site theme
 const ink = 'text-[#0a0c12]';
@@ -85,7 +84,6 @@ function AddFunds() {
   const ways = [
     ['Card', 'Visa or Mastercard', <><rect x="2.5" y="5" width="15" height="10.5" rx="2" /><path d="M2.5 8.5h15" /></>],
     ['Bank transfer', 'From your bank account', <><path d="M3 8h14L10 4 3 8Z" /><path d="M5 8v6M8.5 8v6M11.5 8v6M15 8v6M3 16h14" /></>],
-    ['Verified sellers (P2P)', 'Buy directly from other users', <><circle cx="7" cy="7" r="2.5" /><circle cx="13.5" cy="8.5" r="2" /><path d="M2.5 16c.5-2.5 2.3-4 4.5-4s4 1.5 4.5 4M12 13c2 0 3.5 1.2 4 3" /></>],
     ['Deposit crypto', 'Send from another wallet', <path d="M10 3.5v9M6 9l4 4 4-4M4 16.5h12" />],
   ];
   return (
@@ -177,87 +175,38 @@ function Phone({ step }) {
   );
 }
 
-// A notification that drops in over the top of the phone once each step's screen has played
-const TOASTS = [
-  { title: 'Email confirmed', sub: 'Welcome to Mybitstore', },
-  { title: 'Account protected', sub: 'Two-factor is on', },
-  { title: 'Funds added', sub: 'Ready to trade', },
-  { title: 'Bitcoin bought', sub: 'Now in your wallet', },
-];
-
-function Toast({ step }) {
-  const t = TOASTS[step];
-  return (
-    <div key={step} className="absolute left-1/2 top-[18px] z-2 w-[300px] -translate-x-1/2 max-sm:w-[260px]">
-      <div className="flex animate-[v4-toast_700ms_cubic-bezier(0.16,1,0.3,1)_1.9s_backwards] items-center gap-3 rounded-[20px] bg-white/95 py-2.5 pl-2.5 pr-4 shadow-[0_20px_40px_-16px_rgba(5,10,50,0.55)] backdrop-blur-md">
-        <span className="grid size-8 place-items-center rounded-full bg-[#0f9f6e] text-white"><Check size={14} /></span>
-        <span>
-          <span className="block text-[13px] font-semibold text-[#0a0c12]">{t.title}</span>
-          <span className="block text-[11px] text-[#6b7280]">{t.sub}</span>
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// Steps on the left that advance on their own (or on click); the phone on the right shows each one in the app
+// Four steps side by side. Each has its own phone rising out of a soft blue panel, showing that step in the app;
+// the phones rise one after another when the section comes into view, and lift a little on hover.
 export default function StepsV4() {
-  const [step, setStep] = useState(0);
-  const [ref, inView] = useInView({ once: false, threshold: 0.3 });
-  const auto = inView && !reducedMotion();
-
-  useEffect(() => {
-    if (!auto) return undefined;
-    const t = setTimeout(() => setStep((s) => (s + 1) % STEPS.length), STEP_MS);
-    return () => clearTimeout(t);
-  }, [auto, step]);
-
+  const [ref, inView] = useInView({ threshold: 0.2 });
   return (
     <section className={section}>
-      <div ref={ref} className={cx(container, 'grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-16 max-lg:grid-cols-[minmax(0,1fr)] max-lg:gap-12')}>
-        <div className="flex flex-col gap-10">
+      <div className={container}>
+        <div className="flex flex-wrap items-end justify-between gap-8">
           <Heading size="md" parts={['Get started in', '\n', { dim: 'four simple steps.' }]} />
-          <ol className="flex flex-col border-t border-v4-line">
-            {STEPS.map(([title, copy], i) => {
-              const on = step === i;
-              return (
-                <li key={title} className="border-b border-v4-line">
-                  <button type="button" aria-current={on ? 'step' : undefined} onClick={() => setStep(i)} className="group/s relative flex w-full gap-5 py-5 text-left">
-                    <span className={cx('grid size-7 shrink-0 place-items-center rounded-full text-[12px] font-medium tabular-nums transition-[background-color,color,box-shadow] duration-500', i < step ? 'bg-v4-accent text-white' : on ? 'text-v4-accent-ink shadow-[inset_0_0_0_1.5px_var(--v4-accent)]' : 'text-v4-faint shadow-[inset_0_0_0_1px_var(--v4-line-2)]')}>
-                      {i < step ? <Check size={12} /> : i + 1}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className={cx('block text-[19px] font-medium tracking-[-0.015em] transition-colors duration-500', on ? 'text-v4-ink' : 'text-v4-muted group-hover/s:text-v4-ink')}>{title}</span>
-                      <span className={cx('grid transition-[grid-template-rows] duration-700 ease-v4', on ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]')}>
-                        <span className={cx('overflow-hidden text-[15px] leading-[1.6] text-v4-muted transition-opacity duration-700', on ? 'opacity-100' : 'opacity-0')}>
-                          <span className="block pt-2">{copy}</span>
-                        </span>
-                      </span>
-                    </span>
-                    {/* Fills while this step is showing, then the next one takes over */}
-                    {on && (
-                      <span aria-hidden="true" className="absolute -bottom-px left-0 z-1 h-[1.5px] w-full bg-v4-line">
-                        <span key={`${step}-${auto}`} className="block h-full origin-left bg-v4-accent" style={auto ? { animation: `v4-progress ${STEP_MS}ms linear forwards` } : { transform: 'scaleX(1)' }} />
-                      </span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-          <Rise className="flex">
-            <PrimaryButton href={links.signup}>Create your account</PrimaryButton>
-          </Rise>
+          <Rise delay={150}><PrimaryButton href={links.signup}>Create your account</PrimaryButton></Rise>
         </div>
-
-        <Rise className="relative grid h-[680px] place-items-center overflow-hidden rounded-[32px] bg-[radial-gradient(110%_80%_at_20%_0%,#4b79f2_0%,#2f60e0_45%,#1c3fb0_100%)] max-sm:h-[580px]">
-          <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(50%_40%_at_50%_0%,rgba(255,255,255,0.25),transparent)]" />
-          {/* Fine dots and two quiet rings give the panel depth */}
-          <div aria-hidden="true" className="absolute inset-0 opacity-40 [mask-image:radial-gradient(closest-side,#000,transparent)]" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '22px 22px' }} />
-          {[520, 760].map((d) => <span key={d} aria-hidden="true" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/15" style={{ width: d, height: d }} />)}
-          <Phone step={step} />
-          <Toast step={step} />
-        </Rise>
+        <ol ref={ref} className="scrollbar-none mt-10 grid grid-cols-4 gap-4 max-xl:grid-cols-2 max-sm:-mx-5 max-sm:flex max-sm:snap-x max-sm:snap-mandatory max-sm:scroll-px-5 max-sm:overflow-x-auto max-sm:px-5 max-sm:pb-2">
+          {STEPS.map(([title, copy], i) => (
+            <li key={title} className="group/st flex flex-col overflow-hidden rounded-[28px] bg-v4-bg-2 max-sm:w-[82vw] max-sm:shrink-0 max-sm:snap-start">
+              <div className="flex flex-col gap-2.5 p-6 pb-5">
+                <span className="text-[13px] font-medium text-v4-accent-ink">Step {i + 1}</span>
+                <h3 className="text-[20px] font-semibold tracking-[-0.02em] text-v4-ink">{title}</h3>
+                <p className="min-h-[72px] text-[14px] leading-[1.6] text-v4-muted max-xl:min-h-0">{copy}</p>
+              </div>
+              <div className="relative mt-auto h-[360px] overflow-hidden bg-[radial-gradient(90%_70%_at_50%_100%,#4b79f2_0%,#2f60e0_55%,#1f45bf_100%)]">
+                <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,255,255,0.25),transparent)]" />
+                <div
+                  className={cx('absolute left-1/2 top-9 origin-top transition-[translate,opacity] duration-[1200ms] ease-v4 group-hover/st:-translate-y-2', inView ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0')}
+                  style={{ transitionDelay: inView ? `${i * 140}ms` : '0ms', transform: 'translateX(-50%) scale(0.82)' }}
+                >
+                  {/* Mounting the screen once in view starts its animation as the phone arrives */}
+                  {inView ? <Phone step={i} /> : <div className="h-[560px] w-[290px]" />}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

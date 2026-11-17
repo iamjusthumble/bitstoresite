@@ -18,7 +18,7 @@ const NOTES = {
   'OTC & Bulk Trade Desk': 'Large-volume trades, handled for you',
   'Compliance & Tax': 'Tax reports that meet the rules',
   'Token Launch': 'Create and manage your own token',
-  'LENS Compliance Suite': 'Spot and investigate risky transactions',
+  Lens: 'Spot, investigate and report risky transactions',
   About: 'Who we are and what we build',
   'Customer Reviews': 'What our customers say',
   'Press Kit': 'Logos and brand assets',
@@ -37,7 +37,7 @@ const ICONS = {
   'OTC & Bulk Trade Desk': <><rect x="3" y="11" width="3" height="5" rx="0.8" /><rect x="8.5" y="7" width="3" height="9" rx="0.8" /><rect x="14" y="4" width="3" height="12" rx="0.8" /></>,
   'Compliance & Tax': <><path d="M6 3.5h6l3 3v10H6v-13Z" /><path d="M12 3.5v3h3M8.5 11l1.5 1.5 3-3" /></>,
   'Token Launch': <><circle cx="10" cy="10" r="6.5" /><path d="M10 6.5v7M7.5 9 10 6.5 12.5 9" /></>,
-  'LENS Compliance Suite': <><circle cx="9" cy="9" r="5" /><path d="m13 13 3.5 3.5M7 9l1.5 1.5L11 8" /></>,
+  Lens: <><circle cx="9" cy="9" r="5" /><path d="m13 13 3.5 3.5M7 9l1.5 1.5L11 8" /></>,
   About: <><circle cx="10" cy="10" r="6.5" /><path d="M10 9v4.5M10 6.6v.1" /></>,
   'Customer Reviews': <path d="m10 3.5 1.9 4 4.3.5-3.2 3 .9 4.3L10 13.1l-3.9 2.2.9-4.3-3.2-3 4.3-.5 1.9-4Z" />,
   'Press Kit': <><rect x="3.5" y="4.5" width="13" height="11" rx="2" /><path d="m3.5 13 4-3.5 3 2.5 2-1.5 4 3" /><circle cx="13" cy="8" r="1.2" /></>,
@@ -45,8 +45,13 @@ const ICONS = {
   'Open roles': <><rect x="3" y="6.5" width="14" height="9.5" rx="2" /><path d="M7.5 6.5V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 12.5 5v1.5M3 10.5h14" /></>,
 };
 
-// V4 leaves LENS sign-in out of the menus
-const MENUS = shared.map((m) => ({ ...m, items: m.items.filter(([label]) => label !== 'Sign in to LENS') }));
+// V4 menus: Lens sign-in and Token Launch left out, and the compliance suite is simply "Lens"
+const HIDDEN = ['Sign in to LENS', 'Token Launch'];
+const RENAME = { 'LENS Compliance Suite': 'Lens' };
+const MENUS = shared.map((m) => ({
+  ...m,
+  items: m.items.filter(([label]) => !HIDDEN.includes(label)).map(([label, ...rest]) => [RENAME[label] ?? label, ...rest]),
+}));
 
 function ThemeSwitch() {
   const [theme, toggle] = useTheme();

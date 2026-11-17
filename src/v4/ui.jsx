@@ -6,7 +6,8 @@ import { useInView, useMagnetic } from '../v3/motion.js';
 
 export const container = 'mx-auto w-full max-w-[1200px] px-8 max-lg:px-6 max-sm:px-5';
 export const display = 'font-v4 font-semibold tracking-[-0.035em] text-v4-ink';
-export const section = 'relative py-32 max-lg:py-24 max-sm:py-20';
+// Each section gets the same, moderate breathing room; two sections meet with about 192px between them on desktop
+export const section = 'relative py-16 max-lg:py-14 max-sm:py-10';
 
 export const ArrowRight = ({ size = 16, className }) => (
   <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
@@ -76,7 +77,7 @@ export function Rise({ children, className, delay = 0, as: Tag = 'div', ...rest 
   );
 }
 
-const pill = 'group/b relative inline-flex h-12 items-center justify-center gap-2.5 rounded-full px-6 text-[15px] font-medium leading-none transition-[background-color,box-shadow,color,translate] duration-300 ease-v4';
+const pill = 'group/b relative inline-flex h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full px-6 text-[15px] font-medium leading-none transition-[background-color,box-shadow,color,translate] duration-300 ease-v4';
 
 // The main call to action: solid brand blue; the arrow slides on hover and the button leans toward the pointer
 export function PrimaryButton({ href, children, className, onClick }) {

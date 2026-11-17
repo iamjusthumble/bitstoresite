@@ -1,9 +1,9 @@
 import React from 'react';
 import { links } from '../links.js';
 import { items as shared } from '../components/Security.jsx';
-import { securityCopy } from '../v3/copy.js';
+import { P2P_SECURITY_TITLE, securityCopy } from './copy.js';
 
-const items = shared.map((it, i) => ({ ...it, ...securityCopy[i] }));
+const items = shared.filter((it) => it.title !== P2P_SECURITY_TITLE).map((it, i) => ({ ...it, ...securityCopy[i] }));
 import ThemedImg from '../components/ThemedImg.jsx';
 import { cx } from '../ui.js';
 import { useProgress, useSpotlight } from '../v3/motion.js';
@@ -33,18 +33,18 @@ export default function SecurityV4() {
     <section id="security" className={section}>
       <div className={container} ref={spot}>
         <Heading center parts={['Your money and data,', { dim: 'kept safe.' }]} lead="Here’s how we protect your account and every trade you make." />
-        <div className="mt-16 grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
+        <div className="mt-10 grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
           <Rise className="col-span-2 row-span-2 max-sm:col-span-1">
             <Card className="flex h-full flex-col justify-between gap-6 p-8 max-sm:p-6">
               <ShieldVisual />
               <div>
-                <h3 className="font-v4 text-[28px] font-semibold leading-tight tracking-[-0.03em] text-v4-ink">{items[1].title}</h3>
-                <p className="mt-2 max-w-[440px] text-[15px] leading-6 text-v4-muted">{items[1].copy}</p>
+                <h3 className="font-v4 text-[28px] font-semibold leading-tight tracking-[-0.03em] text-v4-ink">{items[0].title}</h3>
+                <p className="mt-2 max-w-[440px] text-[15px] leading-6 text-v4-muted">{items[0].copy}</p>
               </div>
             </Card>
           </Rise>
-          {items.filter((_, i) => i !== 1).map((it, i) => (
-            <Rise key={it.title} delay={100 + i * 90} className={cx(i === 2 && 'col-span-2 max-sm:col-span-1')}>
+          {items.slice(1).map((it, i) => (
+            <Rise key={it.title} delay={100 + i * 90} className="col-span-2 max-sm:col-span-1">
               <Card as={it.href ? 'a' : 'div'} href={it.href} className="flex h-full min-h-[250px] flex-col gap-6 p-7">
                 <span className="grid size-12 place-items-center rounded-[14px] shadow-[inset_0_0_0_1px_var(--v4-line-2)] transition-transform duration-700 ease-v4 group-hover/card:-translate-y-1">
                   <ThemedImg dark={it.icon} light={it.iconLight} width="24" height="24" />

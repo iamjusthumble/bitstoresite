@@ -230,7 +230,7 @@ function ReportingView() {
   );
 }
 
-export function LensWindow({ module, title, children }) {
+export function LensWindow({ module, title, children, brand = 'LENS' }) {
   return (
     <div
       aria-hidden="true"
@@ -241,11 +241,11 @@ export function LensWindow({ module, title, children }) {
           <i className="size-2.5 rounded-[5px] bg-[#f02225]" />
           <i className="size-2.5 rounded-[5px] bg-[#252c42] light:bg-[#dfe2ea]" />
           <i className="size-2.5 rounded-[5px] bg-[#43dfaa]" />
-          <span className="whitespace-nowrap pl-2.5 text-xs leading-[18px] text-[#9aa3bd] light:text-[#6f7794]">LENS · {title}</span>
+          <span className="whitespace-nowrap pl-2.5 text-xs leading-[18px] text-[#9aa3bd] light:text-[#6f7794]">{brand} · {title}</span>
         </div>
         <div className="grid min-h-[440px] grid-cols-[188px_540.67px]">
           <nav className="flex flex-col gap-0.5 border-r border-white/9 bg-[#0a0f1d] px-2.5 py-4 light:border-[#ececf1] light:bg-white">
-            <span className="px-2 pb-3 font-inter-tight text-[15px] font-bold leading-[22.5px] tracking-[2.1px] text-white light:text-black">LENS</span>
+            <span className="px-2 pb-3 font-inter-tight text-[15px] font-bold leading-[22.5px] tracking-[2.1px] text-white light:text-black">{brand}</span>
             {NAV.map((item) => {
               const active = item.id === module;
               return (

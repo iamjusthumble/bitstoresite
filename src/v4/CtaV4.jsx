@@ -10,21 +10,21 @@ import { PrimaryButton, Rise, SecondaryButton, Words, container, display } from 
 export default function CtaV4() {
   const ref = useProgress('enter');
   return (
-    <section ref={ref} className="relative isolate overflow-x-clip bg-[linear-gradient(180deg,var(--v4-bg)_0%,var(--v4-bg-2)_70%)] pb-32 pt-32 max-sm:pb-20 max-sm:pt-20">
+    <section ref={ref} className="relative isolate overflow-x-clip bg-[linear-gradient(180deg,transparent_55%,var(--v4-bg-2))] pb-14 pt-10 max-sm:pb-10 max-sm:pt-6">
       <div className={container}>
         {/* A person on one side, the invitation on the other */}
-        <Rise className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] overflow-hidden rounded-[32px] bg-v4-card shadow-[inset_0_0_0_1px_var(--v4-line)] max-lg:grid-cols-[minmax(0,1fr)]">
-          <div className="flex flex-col justify-center gap-8 p-16 max-lg:p-10 max-sm:p-6">
+        <Rise className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] items-center gap-12 max-lg:grid-cols-[minmax(0,1fr)]">
+          <div className="flex flex-col justify-center gap-8">
             <Words parts={['Ready to', '\n', { dim: 'get started?' }]} className={cx(display, 'text-[64px] leading-[1] max-lg:text-[52px] max-sm:text-[38px]')} />
             <p className="max-w-[440px] text-[18px] leading-[1.6] text-v4-muted max-sm:text-base">
               Trade, pay, and manage your crypto in one place. Signing up takes just a few minutes.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <PrimaryButton href={links.signup}>Create your account</PrimaryButton>
-              <SecondaryButton href={links.login}>Log in</SecondaryButton>
+            <div className="grid w-fit grid-cols-2 gap-3 max-sm:w-full max-sm:grid-cols-1">
+              <PrimaryButton href={links.signup} className="w-full">Create your account</PrimaryButton>
+              <SecondaryButton href={links.login} className="w-full">Log in</SecondaryButton>
             </div>
           </div>
-          <div className="relative min-h-[460px] overflow-hidden max-lg:min-h-[340px] max-sm:min-h-[280px]">
+          <div className="relative min-h-[480px] overflow-hidden rounded-[32px] max-lg:min-h-[360px] max-sm:min-h-[300px]">
             <img
               src={photo}
               alt="A smiling woman holding her phone"

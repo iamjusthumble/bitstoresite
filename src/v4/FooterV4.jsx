@@ -41,7 +41,7 @@ function VersionSwitch() {
 
 export default function FooterV4() {
   return (
-    <footer className="bg-v4-bg-2 pb-10 pt-24 text-v4-ink max-sm:pt-16">
+    <footer className="bg-v4-bg-2 pb-10 pt-16 text-v4-ink max-sm:pt-16">
       <div className={container}>
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)] gap-16 max-lg:grid-cols-[minmax(0,1fr)] max-lg:gap-14">
           <div className="flex flex-col items-start gap-6">
@@ -68,7 +68,7 @@ export default function FooterV4() {
           </nav>
         </div>
 
-        <div className="mt-20 flex items-center justify-between gap-6 border-t border-v4-line pt-8 max-lg:flex-col max-lg:items-start">
+        <div className="mt-12 flex items-center justify-between gap-6 border-t border-v4-line pt-8 max-lg:flex-col max-lg:items-start">
           <p className="text-[13px] text-v4-muted">© 2026 Mybitstore, Inc. All rights reserved.</p>
           <VersionSwitch />
           <div className="flex items-center gap-1">

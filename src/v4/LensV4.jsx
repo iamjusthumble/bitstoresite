@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { links } from '../links.js';
 import { LensWindow, rows as shared } from '../components/Lens.jsx';
-import { lensCopy } from '../v3/copy.js';
+import { lensCopy } from './copy.js';
 
 const rows = shared.map((r) => ({ ...r, ...lensCopy[r.module] }));
 import { cx } from '../ui.js';
@@ -55,25 +55,25 @@ export default function LensV4() {
       {/* The band opens out to full width as it arrives */}
       <div
         ref={band}
-        className="relative overflow-clip bg-v4-bg-2 py-36 text-v4-ink shadow-[inset_0_1px_0_var(--v4-line),inset_0_-1px_0_var(--v4-line)] max-lg:py-28 max-sm:py-20"
-        style={{ clipPath: 'inset(0 calc((1 - var(--p, 0)) * 4vw) round calc((1 - var(--p, 0)) * 40px))' }}
+        className="relative overflow-clip bg-v4-bg-2/60 py-16 text-v4-ink shadow-[inset_0_1px_0_var(--v4-line),inset_0_-1px_0_var(--v4-line)] max-lg:py-14 max-sm:py-10"
+        style={wide ? { clipPath: 'inset(0 calc((1 - var(--p, 0)) * 4vw) round calc((1 - var(--p, 0)) * 40px))' } : undefined}
       >
 
         <div className="relative mx-auto max-w-[1200px] px-8 max-lg:px-6 max-sm:px-5">
           <Heading
             center
             parts={['Keep your crypto business', { dim: 'safe and compliant.' }]}
-            lead="LENS helps crypto businesses spot suspicious transactions, investigate them, and file the reports regulators require."
+            lead="Lens helps crypto businesses spot suspicious transactions, investigate them, and file the reports regulators require."
           />
 
-          <div className="mt-20 grid grid-cols-[minmax(0,1fr)_600px] gap-16 max-xl:grid-cols-[minmax(0,1fr)_560px] max-xl:gap-10 max-lg:mt-14 max-lg:grid-cols-[minmax(0,1fr)]">
+          <div className="mt-10 grid grid-cols-[minmax(0,1fr)_600px] gap-16 max-xl:grid-cols-[minmax(0,1fr)_560px] max-xl:gap-10 max-lg:mt-10 max-lg:grid-cols-[minmax(0,1fr)]">
             <div>
               {rows.map((r, i) => (
                 <div
                   key={r.module}
                   ref={(el) => { refs.current[i] = el; }}
                   data-i={i}
-                  className={cx('flex flex-col justify-center gap-5 transition-opacity duration-500 lg:min-h-[78svh]', wide && active !== i && 'opacity-35', !wide && 'mb-16')}
+                  className={cx('flex flex-col justify-center gap-5 transition-opacity duration-500 lg:min-h-[52svh]', wide && active !== i && 'opacity-35', !wide && 'mb-10')}
                 >
                   <span className="text-[14px] font-medium text-v4-accent-ink">{r.title}</span>
                   <h3 className="font-v4 text-[38px] font-semibold leading-[1.08] tracking-[-0.035em] max-sm:text-[28px]">{r.heading}</h3>
@@ -86,7 +86,7 @@ export default function LensV4() {
                       </li>
                     ))}
                   </ul>
-                  {!wide && <div className="mt-4 flex justify-center overflow-hidden"><LensWindow module={r.module} title={r.title}><r.View /></LensWindow></div>}
+                  {!wide && <div className="mt-4 flex justify-center overflow-hidden"><LensWindow module={r.module} title={r.title} brand="Lens"><r.View /></LensWindow></div>}
                   {/* The button follows the last feature directly, so there is no gap above it */}
                   {i === rows.length - 1 && <PrimaryButton href={links.support} className="mt-4 self-start">Talk to our team</PrimaryButton>}
                 </div>
@@ -105,7 +105,7 @@ export default function LensV4() {
                       )}
                     >
                       <div className="rounded-[24px] bg-v4-card p-2.5 shadow-[inset_0_0_0_1px_var(--v4-line),var(--v4-shadow)]">
-                        <LensWindow module={r.module} title={r.title}><r.View /></LensWindow>
+                        <LensWindow module={r.module} title={r.title} brand="Lens"><r.View /></LensWindow>
                       </div>
                     </div>
                   ))}

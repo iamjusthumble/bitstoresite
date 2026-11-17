@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import bot from '../assets/ai-bot.png';
-import { features as shared } from '../components/AiFeatures.jsx';
-import { aiCopy } from '../v3/copy.js';
+import { AnalysisVisual, features as shared } from '../components/AiFeatures.jsx';
+import { aiAlert, aiCopy } from './copy.js';
 import ThinkingOrb from '../components/ThinkingOrb.jsx';
 import { cx } from '../ui.js';
 import { useMedia, useProgress } from '../v3/motion.js';
 import { Rise, Words, display } from './ui.jsx';
 
-const features = shared.map((f, i) => ({ ...f, ...aiCopy[i] }));
+// The analysis preview uses V4's alert wording (no P2P)
+const features = shared.map((f, i) => ({ ...f, ...aiCopy[i], ...(f.Visual === AnalysisVisual && { Visual: () => <AnalysisVisual alert={aiAlert} /> }) }));
 const TITLE = ['An AI assistant that', { dim: 'helps you trade.' }];
 const LEAD = 'Ask questions, find trading ideas, and understand your results, all inside the Mybitstore app.';
 // The first 30% of the scroll zooms the device in; the rest is split between the three features
@@ -36,7 +37,7 @@ function Visual({ index }) {
   return (
     // `is-visible` lets the shared visuals play their entrance each time a feature comes up
     <div key={index} className="is-visible grid animate-[v4-fade-up_0.9s_var(--ease-v4)] place-items-center">
-      <div className="scale-[1.18] max-sm:scale-[0.82]"><V /></div>
+      <div className="scale-[1.18] max-sm:scale-[0.82] max-[380px]:scale-[0.7]"><V /></div>
     </div>
   );
 }
@@ -51,12 +52,12 @@ export default function AiV4() {
 
   if (!wide) {
     return (
-      <section id="ai" className="relative py-24 max-sm:py-20">
+      <section id="ai" className="relative py-14 max-sm:py-10">
         <div className="flex flex-col items-center gap-6 px-6 text-center max-sm:px-5">
           <Words parts={TITLE} className={cx(display, 'text-[48px] leading-[1.04] max-sm:text-[36px] max-sm:leading-[1.06]')} />
           <p className="max-w-[520px] text-base leading-[1.6] text-v4-muted">{LEAD}</p>
         </div>
-        <div className="mt-12 flex flex-col gap-6 px-5">
+        <div className="mt-10 flex flex-col gap-6 px-5">
           {features.map((f, i) => (
             <Rise key={f.tab} className="v4-card overflow-hidden rounded-[24px]">
               <div className="p-6">
@@ -72,7 +73,7 @@ export default function AiV4() {
   }
 
   return (
-    <section id="ai" ref={ref} className="relative h-[340svh]" style={{ '--z': `clamp(0, calc(var(--p, 0) / ${ZOOM}), 1)` }}>
+    <section id="ai" ref={ref} className="relative h-[240svh]" style={{ '--z': `clamp(0, calc(var(--p, 0) / ${ZOOM}), 1)` }}>
       <div className="sticky top-0 flex h-svh flex-col items-center justify-center overflow-hidden">
         <div aria-hidden="true" className="absolute left-1/2 top-[58%] h-[70vh] w-[70vw] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: 'radial-gradient(closest-side, var(--v4-glow), transparent)', opacity: 'calc(0.2 + var(--z) * 0.8)' }} />
 

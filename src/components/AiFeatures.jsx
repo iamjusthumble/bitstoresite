@@ -82,7 +82,14 @@ function TradeVisual() {
   );
 }
 
-function AnalysisVisual() {
+// The alert card's wording can be swapped by a version that words it differently
+const ESCROW_ALERT = {
+  title: 'Strict Escrow Active',
+  copy: 'Your current P2P transaction requires additional verification due to high value and new counterparty.',
+  tags: ['Transaction Value: $1,250', 'New Trader'],
+};
+
+export function AnalysisVisual({ alert = ESCROW_ALERT }) {
   return (
     <div className="relative h-[218px] w-[368px] shrink-0 text-white light:text-[#1e1f20]">
       <div className="absolute left-0 top-0 flex h-[81px] w-[357.18px] flex-col gap-[6.1px] rounded-[8.7px] border-[0.435px] border-[#289f7c] bg-[rgba(40,159,124,0.1)] px-[10.45px] py-[8.7px] revealed:animate-[rise_0.6s_var(--ease-soft)_0.1s_backwards]">
@@ -97,12 +104,12 @@ function AnalysisVisual() {
         <div className="flex max-w-[283.93px] items-start gap-[7.84px]">
           <span className="grid size-[26.13px] shrink-0 place-items-center rounded-[87px] bg-[#ffe0bb]"><img src={info} alt="" width="21" height="21" /></span>
           <div>
-            <p className="text-[12.19px] leading-[1.2]">Strict Escrow Active</p>
-            <small className="block text-[10.45px] leading-[1.2]">Your current P2P transaction requires additional verification due to high value and new counterparty.</small>
+            <p className="text-[12.19px] leading-[1.2]">{alert.title}</p>
+            <small className="block text-[10.45px] leading-[1.2]">{alert.copy}</small>
           </div>
         </div>
         <div className="flex gap-[8.7px] px-[29.6px]">
-          {['Transaction Value: $1,250', 'New Trader'].map((t) => (
+          {alert.tags.map((t) => (
             <span key={t} className="whitespace-nowrap rounded-[87px] bg-[#ffe0bb] p-[6.1px] text-[8.71px] leading-none text-[#ee8200]">{t}</span>
           ))}
         </div>

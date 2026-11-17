@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { faqs } from '../v3/copy.js';
+import { faqs } from './copy.js';
 import { cx } from '../ui.js';
 import { Heading, Rise, container, section } from './ui.jsx';
 
@@ -10,7 +10,7 @@ export default function FaqV4() {
     <section id="faq" className={section}>
       <div className={container}>
         <Heading center parts={['Frequently asked', { dim: 'questions.' }]} />
-        <ul className="mx-auto mt-16 max-w-[800px] border-t border-v4-line max-sm:mt-12">
+        <ul className="mx-auto mt-10 max-w-[800px] border-t border-v4-line max-sm:mt-8">
           {faqs.map((f, i) => {
             const on = open === i;
             return (

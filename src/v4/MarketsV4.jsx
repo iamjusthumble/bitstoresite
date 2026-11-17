@@ -233,7 +233,7 @@ function useSlider(activeKey, deps = []) {
 function Tabs({ tab, setTab }) {
   const [box, rect] = useSlider(tab);
   return (
-    <div ref={box} role="tablist" aria-label="Filter assets" className="v4-card relative flex gap-1 rounded-full p-1">
+    <div ref={box} role="tablist" aria-label="Filter assets" className="v4-card relative grid auto-cols-fr grid-flow-col gap-1 rounded-full p-1">
       {rect && <span aria-hidden="true" className="absolute rounded-full bg-v4-ink" style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h, transition: `left 500ms ${EASE}, width 500ms ${EASE}` }} />}
       {TABS.map((t) => (
         <button
@@ -242,7 +242,7 @@ function Tabs({ tab, setTab }) {
           aria-selected={tab === t}
           data-active={tab === t}
           onClick={() => setTab(t)}
-          className={cx('relative h-10 rounded-full px-5 text-sm font-medium transition-colors duration-500', tab === t ? 'text-v4-bg' : 'text-v4-muted hover:text-v4-ink')}
+          className={cx('relative h-10 whitespace-nowrap rounded-full px-5 text-sm font-medium transition-colors duration-500 max-[380px]:px-3.5', tab === t ? 'text-v4-bg' : 'text-v4-muted hover:text-v4-ink')}
         >
           {t}
         </button>
@@ -318,7 +318,7 @@ export default function MarketsV4() {
         <Rise delay={200} className="mt-8 flex justify-center"><Tabs tab={tab} setTab={setTab} /></Rise>
 
         {/* One panel: the featured coin beside the list, split by a hairline. The list keeps its "All" height for every filter. */}
-        <Rise delay={150} className="mt-12 grid grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] overflow-hidden rounded-[28px] bg-v4-card shadow-[inset_0_0_0_1px_var(--v4-line),var(--v4-shadow)] max-lg:grid-cols-[minmax(0,1fr)]">
+        <Rise delay={150} className="mt-10 grid grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] overflow-hidden rounded-[28px] bg-v4-card shadow-[inset_0_0_0_1px_var(--v4-line),var(--v4-shadow)] max-lg:grid-cols-[minmax(0,1fr)]">
           <Featured meta={meta} coin={coins[picked]} />
           <div className="border-l border-v4-line max-lg:border-l-0 max-lg:border-t">
             <CoinList rows={rows} coins={coins} picked={picked} onPick={setPicked} status={status} tab={tab} />
